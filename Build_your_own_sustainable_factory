@@ -1,0 +1,3956 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+  <title>Build Your Sustainable Factory — Offline HSE Game</title>
+  <style>
+  :root{
+  --novSoftWhite:#fcfcfc;
+  --novWarmBlack:#161616;
+  --novOrange:#ff4e00;
+  --novGrey1:#dadada;
+  --novGrey2:#f5f5f5;
+  --novBlue:#a5bff5;
+  --novPink:#eda8d1;
+
+  --blue:#003865;
+  --green:#00A651;
+  --text:#161616;
+
+  --zonePeople:#ff4e00;
+  --zoneWater:#0097A7;
+  --zoneWaste:#2E7D32;
+  --zoneEnergy:#E65100;
+  --zoneRes:#6A1B9A;
+
+  --deckBlue:#444444;
+  --deckOrange:#ff4e00;
+
+  --journeyGradient:linear-gradient(135deg, #a5bff5 0%, #eda8d1 48%, #ff4e00 100%);
+  --uiDark:#3f3f3f;
+  --radius:8px;
+}
+
+*{
+  box-sizing:border-box;
+}
+
+html,
+body{
+  height:100%;
+}
+
+body{
+  margin:0;
+  font-family:"Trebuchet MS", "Segoe UI", Arial, sans-serif;
+  background:var(--novGrey2);
+  color:var(--novWarmBlack);
+  font-size:14px;
+  line-height:1.45;
+  letter-spacing:0.01em;
+}
+
+/* =========================================================
+   NAVBAR
+   ========================================================= */
+
+.navbar{
+  position:sticky;
+  top:0;
+  z-index:1000;
+  min-height:48px;
+  background:var(--novWarmBlack);
+  color:var(--novSoftWhite);
+  border-top:5px solid var(--novOrange);
+  border-bottom:none;
+  box-shadow:none;
+}
+
+.navbar-inner{
+  max-width:none;
+  height:48px;
+  margin:0 auto;
+  padding:0 14px;
+  display:grid;
+  grid-template-columns:220px 1fr auto;
+  gap:12px;
+  align-items:center;
+}
+
+.brand{
+  height:38px;
+  display:flex;
+  align-items:center;
+  justify-content:flex-start;
+  gap:10px;
+  background:transparent;
+  margin-left:0;
+  padding-left:0;
+  padding-right:18px;
+  min-width:0;
+}
+
+.brand .wordmark{
+  display:none;
+}
+
+.novartisLogo{
+  display:block;
+  height:25px;
+  width:auto;
+  object-fit:contain;
+}
+
+.app-title{
+  text-align:center;
+  font-size:16px;
+  font-weight:800;
+  letter-spacing:0.2px;
+  color:var(--novSoftWhite);
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+
+.steps{
+  display:flex;
+  gap:8px;
+  align-items:center;
+  justify-content:flex-end;
+  flex-wrap:wrap;
+}
+
+.step{
+  position:relative;
+  isolation:isolate;
+  display:flex;
+  align-items:center;
+  gap:9px;
+  height:30px;
+  padding:3px 13px 3px 4px;
+  border-radius:999px;
+  background:var(--novWarmBlack);
+  color:var(--novSoftWhite);
+  border:1px solid rgba(252,252,252,0.28);
+  font-size:13px;
+  font-weight:1000;
+  box-shadow:none;
+  transition:transform 0.18s ease, box-shadow 0.18s ease;
+}
+
+.step::before{
+  content:"";
+  position:absolute;
+  inset:-2px;
+  z-index:-1;
+  border-radius:999px;
+  background:var(--journeyGradient);
+  opacity:0;
+  transition:opacity 0.18s ease;
+}
+
+.step .num{
+  width:24px;
+  height:24px;
+  border-radius:999px;
+  display:grid;
+  place-items:center;
+  border:none;
+  background:var(--novOrange);
+  color:var(--novSoftWhite);
+  font-size:12px;
+  font-weight:1000;
+}
+
+.step:hover{
+  transform:translateY(-1px);
+  border-color:transparent;
+  box-shadow:
+    0 0 0 2px rgba(255,78,0,0.18),
+    0 0 14px rgba(237,168,209,0.35),
+    0 0 24px rgba(165,191,245,0.30);
+}
+
+.step:hover::before{
+  opacity:1;
+}
+
+.step.active{
+  background:var(--novSoftWhite);
+  color:var(--novWarmBlack);
+  border-color:transparent;
+  box-shadow:0 0 12px rgba(255,78,0,0.35);
+}
+
+.step.active::before{
+  opacity:1;
+}
+
+.step.done{
+  background:var(--novWarmBlack);
+  color:var(--novSoftWhite);
+  border:1px solid rgba(252,252,252,0.28);
+}
+
+/* =========================================================
+   GLOBAL LAYOUT
+   ========================================================= */
+
+.container{
+  max-width:none;
+  margin:0 auto;
+  padding:12px 14px 16px;
+}
+
+.screen{
+  display:none;
+  opacity:0;
+  transform:translateY(6px);
+  transition:opacity 0.18s ease, transform 0.18s ease;
+  min-height:calc(100vh - 72px);
+}
+
+.screen.active{
+  display:block;
+  opacity:1;
+  transform:translateY(0);
+}
+
+.card,
+.deck,
+.zone,
+.control,
+.revealCard{
+  box-shadow:none;
+}
+
+.card{
+  background:var(--novSoftWhite);
+  border-radius:8px;
+  border:1px solid var(--novGrey1);
+}
+
+.pad{
+  padding:12px;
+}
+
+.grid-2{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:14px;
+  align-items:stretch;
+}
+
+.grid-2 > .card,
+.grid-2 > .deck{
+  height:100%;
+}
+
+.h1{
+  font-size:26px;
+  font-weight:900;
+  letter-spacing:-0.2px;
+  margin:0;
+}
+
+.sub{
+  margin-top:2px;
+  font-size:13px;
+  line-height:1.45;
+  font-weight:600;
+  color:#333;
+}
+
+label{
+  height:14px;
+  line-height:14px;
+  margin:0;
+  display:block;
+  font-size:11px;
+  font-weight:800;
+  color:#333;
+}
+
+input{
+  width:100%;
+  height:30px;
+  min-height:30px;
+  padding:6px 10px;
+  border-radius:5px;
+  border:1px solid var(--novGrey1);
+  background:var(--novSoftWhite);
+  font-size:13px;
+  font-weight:700;
+  line-height:18px;
+  outline:none;
+}
+
+input:focus{
+  box-shadow:0 0 0 4px rgba(255,78,0,0.16);
+  border-color:var(--novOrange);
+}
+
+.btn{
+  border:none;
+  background:var(--novOrange);
+  color:var(--novSoftWhite);
+  height:30px;
+  min-height:30px;
+  padding:6px 14px;
+  border-radius:999px;
+  font-size:12px;
+  font-weight:800;
+  cursor:pointer;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:10px;
+  user-select:none;
+  box-shadow:none;
+  transition:transform 0.12s ease, filter 0.12s ease;
+}
+
+.btn:hover{
+  transform:translateY(-1px);
+  filter:brightness(1.04);
+}
+
+.btn:disabled{
+  opacity:0.55;
+  cursor:not-allowed;
+  transform:none;
+}
+
+.btn.secondary{
+  background:var(--novSoftWhite);
+  color:var(--novWarmBlack);
+  border:1px solid var(--novGrey1);
+}
+
+.btn.blue,
+.btn.orange,
+.btn.red{
+  background:var(--novOrange);
+  color:var(--novSoftWhite);
+}
+
+.pill,
+.tokenPill{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  border-radius:999px;
+  padding:6px 12px;
+  background:var(--novSoftWhite);
+  color:var(--novWarmBlack);
+  border:1px solid var(--novGrey1);
+  font-size:11px;
+  font-weight:1000;
+  text-transform:uppercase;
+}
+
+.chips{
+  display:none !important;
+}
+
+/* =========================================================
+   HERO
+   ========================================================= */
+
+.hero{
+  width:100%;
+  border-radius:0;
+  overflow:hidden;
+  box-shadow:none;
+  border:1px solid var(--novGrey1);
+  position:relative;
+  background:var(--novSoftWhite);
+  color:var(--novWarmBlack);
+}
+
+.hero-overlay{
+  display:none;
+}
+
+.hero-inner{
+  position:absolute;
+  top:0;
+  left:0;
+  right:0;
+  z-index:4;
+  min-height:34px;
+  padding:6px 14px;
+  background:rgba(65,65,65,0.72);
+  color:var(--novSoftWhite);
+  border-bottom:none;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:12px;
+  flex-wrap:wrap;
+}
+
+.hero-title{
+  display:none;
+}
+
+.hero-mission{
+  margin:0;
+  font-size:13px;
+  line-height:1.35;
+  color:var(--novSoftWhite);
+  font-weight:900;
+  max-width:none;
+}
+
+.hero-inner .pill{
+  position:relative;
+  isolation:isolate;
+  background:var(--novSoftWhite);
+  color:var(--novWarmBlack);
+  border:none;
+  border-radius:999px;
+  font-size:18px;
+  font-weight:1000;
+  padding:12px 30px;
+  box-shadow:0 0 18px rgba(237,168,209,0.30);
+}
+
+.hero-inner .pill::before{
+  content:"";
+  position:absolute;
+  inset:-2px;
+  z-index:-1;
+  border-radius:999px;
+  background:var(--journeyGradient);
+}
+
+.scene{
+  position:relative;
+  height:220px;
+  background:url("https://share.novartis.net/:i:/r/sites/TechOpsFair-HSEESbooth/Shared%20Documents/Digital%20board/Images/factory.png?d=wfd895de7b71e4b9b9bb8790d97a6d6ef&csf=1&web=1&e=aZEwLR") center center / cover no-repeat;
+}
+
+.scene > *{
+  display:none;
+}
+
+/* =========================================================
+   SCREEN 1 SETUP PAGE
+   ========================================================= */
+
+#s1 .setupTwoCards{
+  margin-top:14px;
+  display:grid;
+  grid-template-columns:1.45fr 1fr;
+  gap:14px;
+  align-items:stretch;
+  width:100%;
+}
+
+#s1 .setupPanel{
+  background:var(--novGrey1);
+  border:1px solid #cfcfcf;
+  border-radius:10px;
+  padding:14px;
+  box-shadow:none;
+  width:100%;
+  min-height:174px;
+  height:174px;
+  display:grid;
+  grid-template-rows:22px 1fr;
+  overflow:hidden;
+}
+
+#s1 .setupPanelTitle{
+  height:22px;
+  min-height:22px;
+  margin:0;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  color:#0067b1;
+  font-size:13px;
+  font-weight:1000;
+  line-height:1;
+}
+
+#s1 .setupPanelTitle span{
+  display:flex;
+  align-items:center;
+  gap:6px;
+}
+
+#s1 .setupTitleIcon{
+  width:12px;
+  height:12px;
+  object-fit:contain;
+  display:block;
+  flex:0 0 auto;
+}
+
+#s1 .setupPanelTitle small{
+  font-size:8px;
+  font-weight:1000;
+  color:rgba(0,0,0,0.55);
+}
+
+#s1 .setupFields{
+  margin-top:8px;
+  display:grid;
+  grid-template-columns:1fr;
+  grid-template-rows:36px 36px 30px;
+  gap:7px;
+  min-width:0;
+}
+
+#s1 .memberGrid{
+  margin-top:8px;
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  grid-template-rows:36px 36px 30px;
+  gap:7px 12px;
+  min-width:0;
+}
+
+#s1 .setupField{
+  display:grid;
+  grid-template-rows:11px 24px;
+  gap:2px;
+  min-width:0;
+}
+
+#s1 .setupField label{
+  height:11px;
+  min-height:11px;
+  line-height:11px;
+  margin:0;
+  font-size:8px;
+  font-weight:900;
+  color:var(--novWarmBlack);
+}
+
+#s1 .setupField input{
+  height:24px;
+  min-height:24px;
+  padding:4px 8px;
+  border-radius:5px;
+  border:1px solid transparent;
+  background:var(--novSoftWhite);
+  color:var(--novWarmBlack);
+  font-size:10px;
+  font-weight:800;
+  line-height:14px;
+  width:100%;
+  min-width:0;
+}
+
+#s1 .setupMission{
+  height:30px;
+  min-height:30px;
+  display:flex;
+  align-items:center;
+  border-radius:5px;
+  background:var(--novOrange);
+  color:var(--novSoftWhite);
+  padding:5px 9px;
+  font-size:8px;
+  font-weight:800;
+  line-height:1.15;
+  overflow:hidden;
+}
+
+#s1 .setupActions{
+  grid-column:1 / -1;
+  height:30px;
+  min-height:30px;
+  display:flex;
+  align-items:center;
+  justify-content:flex-end;
+  gap:10px;
+  min-width:0;
+}
+
+#s1 .setupActions .btn{
+  height:26px;
+  min-height:26px;
+  padding:5px 12px;
+  border-radius:999px;
+  font-size:9px;
+  font-weight:900;
+}
+
+#s1 .setupActions .btn.secondary{
+  background:var(--novSoftWhite);
+  color:#0067b1;
+  border:none;
+  min-width:70px;
+}
+
+#s1 #btnBeginBuild{
+  background:var(--novOrange);
+  color:var(--novSoftWhite);
+  border:none;
+  min-width:135px;
+}
+
+#s1 > .container > .card.pad{
+  display:none !important;
+}
+
+.inputError{
+  border-color:#B00020 !important;
+  box-shadow:0 0 0 3px rgba(176,0,32,0.18) !important;
+  background:#fff7f8 !important;
+}
+
+/* =========================================================
+   SCREEN 2 BUILD PHASE
+   ========================================================= */
+
+#s2 .card.pad{
+  background:var(--novGrey1);
+}
+
+#s2 .card.pad > div:first-child{
+  align-items:center !important;
+}
+
+.stickyTop{
+  position:static;
+  background:transparent;
+  border:none;
+  box-shadow:none;
+  padding:0;
+  margin-top:6px !important;
+}
+
+.stickyRow{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:12px;
+  flex-wrap:wrap;
+}
+
+.tokenPill{
+  height:38px;
+  min-height:38px;
+  background:rgba(0,166,81,0.08);
+  border-color:rgba(0,166,81,0.35);
+  color:#0b4f2b;
+}
+
+.tokenPill.full{
+  background:rgba(176,0,32,0.10);
+  border-color:rgba(176,0,32,0.45);
+  color:#7a0016;
+}
+
+#teamInfo{
+  background:var(--novSoftWhite);
+  color:var(--novWarmBlack);
+  border:1px solid var(--novGrey1);
+}
+
+.factoryBoard{
+  margin-top:10px;
+  display:grid;
+  grid-template-columns:repeat(5, minmax(0, 1fr));
+  grid-template-areas:"people water waste energy res";
+  gap:10px;
+  align-items:stretch;
+}
+
+.zone{
+  border-radius:4px;
+  border:1px solid var(--novGrey1);
+  box-shadow:none;
+  background:var(--novSoftWhite);
+  overflow:hidden;
+  height:100%;
+  display:flex;
+  flex-direction:column;
+}
+
+.zoneHeader{
+  min-height:86px;
+  height:86px;
+  flex:0 0 auto;
+  padding:10px;
+  background:var(--novSoftWhite) !important;
+  color:var(--novWarmBlack) !important;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:flex-end;
+  gap:6px;
+  text-align:center;
+  border-bottom:1px solid var(--novGrey1);
+  position:relative;
+  font-weight:1000;
+}
+
+.zoneHeader > div:first-child{
+  font-size:12px;
+  font-weight:1000;
+}
+
+.zoneHeader > div:last-child{
+  display:none;
+}
+
+.zoneHeader::before{
+  content:"";
+  position:absolute;
+  top:10px;
+  left:50%;
+  transform:translateX(-50%);
+  width:112px;
+  height:44px;
+  border-radius:999px;
+}
+
+.zoneHeader::after{
+  position:absolute;
+  top:20px;
+  left:50%;
+  transform:translateX(-50%);
+  width:24px;
+  height:24px;
+  display:grid;
+  place-items:center;
+  color:#fff;
+  font-size:16px;
+  font-weight:900;
+  z-index:2;
+  line-height:1;
+}
+
+.zone[style*="people"] .zoneHeader::before{
+  background:
+    radial-gradient(circle at 20% 50%, rgba(255,78,0,0.14) 0 18px, transparent 19px),
+    radial-gradient(circle at 50% 50%, rgba(255,78,0,0.92) 0 18px, transparent 19px),
+    radial-gradient(circle at 80% 50%, rgba(255,78,0,0.14) 0 18px, transparent 19px);
+}
+
+.zone[style*="people"] .zoneHeader::after{
+  content:"👥";
+}
+
+.zone[style*="water"] .zoneHeader::before{
+  background:
+    radial-gradient(circle at 20% 50%, rgba(0,151,167,0.14) 0 18px, transparent 19px),
+    radial-gradient(circle at 50% 50%, rgba(0,151,167,0.92) 0 18px, transparent 19px),
+    radial-gradient(circle at 80% 50%, rgba(0,151,167,0.14) 0 18px, transparent 19px);
+}
+
+.zone[style*="water"] .zoneHeader::after{
+  content:"💧";
+}
+
+.zone[style*="waste"] .zoneHeader::before{
+  background:
+    radial-gradient(circle at 20% 50%, rgba(46,125,50,0.14) 0 18px, transparent 19px),
+    radial-gradient(circle at 50% 50%, rgba(46,125,50,0.92) 0 18px, transparent 19px),
+    radial-gradient(circle at 80% 50%, rgba(46,125,50,0.14) 0 18px, transparent 19px);
+}
+
+.zone[style*="waste"] .zoneHeader::after{
+  content:"🍃";
+}
+
+.zone[style*="energy"] .zoneHeader::before{
+  background:
+    radial-gradient(circle at 20% 50%, rgba(230,81,0,0.14) 0 18px, transparent 19px),
+    radial-gradient(circle at 50% 50%, rgba(230,81,0,0.92) 0 18px, transparent 19px),
+    radial-gradient(circle at 80% 50%, rgba(230,81,0,0.14) 0 18px, transparent 19px);
+}
+
+.zone[style*="energy"] .zoneHeader::after{
+  content:"⚡";
+}
+
+.zone[style*="res"] .zoneHeader::before{
+  background:
+    radial-gradient(circle at 20% 50%, rgba(106,27,154,0.14) 0 18px, transparent 19px),
+    radial-gradient(circle at 50% 50%, rgba(106,27,154,0.92) 0 18px, transparent 19px),
+    radial-gradient(circle at 80% 50%, rgba(106,27,154,0.14) 0 18px, transparent 19px);
+}
+
+.zone[style*="res"] .zoneHeader::after{
+  content:"🛡";
+}
+
+.zoneBody{
+  flex:1;
+  display:grid !important;
+  grid-template-columns:1fr !important;
+  gap:8px;
+  padding:8px;
+  background:var(--novSoftWhite);
+  align-content:start;
+}
+
+.control{
+  min-height:92px;
+  display:grid !important;
+  grid-template-rows:30px 38px 24px;
+  gap:5px;
+  align-items:start;
+  border-radius:4px;
+  border:1px solid var(--novGrey1);
+  background:var(--novSoftWhite);
+  padding:9px;
+  box-shadow:none;
+  position:relative;
+}
+
+.control .name{
+  min-height:30px;
+  display:flex;
+  align-items:flex-start;
+  font-size:12px;
+  font-weight:900;
+  color:rgba(0,0,0,0.78);
+  line-height:1.2;
+}
+
+.control .benefit{
+  min-height:38px;
+  display:flex;
+  align-items:flex-start;
+  font-size:10px;
+  line-height:1.4;
+  font-weight:600;
+  color:#555;
+}
+
+.control .selectBtn{
+  width:100%;
+  height:24px;
+  min-height:24px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  border-radius:3px;
+  border:1px solid #e5e5e5;
+  background:var(--novSoftWhite);
+  font-size:10px;
+  font-weight:800;
+  cursor:pointer;
+}
+
+.tokenChip{
+  position:absolute;
+  top:7px;
+  right:7px;
+  width:15px;
+  height:15px;
+  border-radius:999px;
+  color:#fff;
+  font-size:9px;
+  font-weight:1000;
+  display:none;
+  place-items:center;
+  border:none;
+}
+
+.control.selected .tokenChip{
+  display:grid;
+}
+
+.zone[style*="people"] .control:not(.selected) .selectBtn{
+  color:#ff4e00;
+}
+
+.zone[style*="water"] .control:not(.selected) .selectBtn{
+  color:#0097A7;
+}
+
+.zone[style*="waste"] .control:not(.selected) .selectBtn{
+  color:#2E7D32;
+}
+
+.zone[style*="energy"] .control:not(.selected) .selectBtn{
+  color:#E65100;
+}
+
+.zone[style*="res"] .control:not(.selected) .selectBtn{
+  color:#6A1B9A;
+}
+
+.zone[style*="people"] .control.selected{
+  background:rgba(255,78,0,0.07);
+  border-color:#ff4e00;
+}
+
+.zone[style*="water"] .control.selected{
+  background:rgba(0,151,167,0.07);
+  border-color:#0097A7;
+}
+
+.zone[style*="waste"] .control.selected{
+  background:rgba(46,125,50,0.07);
+  border-color:#2E7D32;
+}
+
+.zone[style*="energy"] .control.selected{
+  background:rgba(230,81,0,0.07);
+  border-color:#E65100;
+}
+
+.zone[style*="res"] .control.selected{
+  background:rgba(106,27,154,0.07);
+  border-color:#6A1B9A;
+}
+
+.zone[style*="people"] .tokenChip{
+  background:#ff4e00;
+}
+
+.zone[style*="water"] .tokenChip{
+  background:#0097A7;
+}
+
+.zone[style*="waste"] .tokenChip{
+  background:#2E7D32;
+}
+
+.zone[style*="energy"] .tokenChip{
+  background:#E65100;
+}
+
+.zone[style*="res"] .tokenChip{
+  background:#6A1B9A;
+}
+
+#btnClear{
+  background:var(--novSoftWhite);
+  color:var(--novWarmBlack);
+  border:1px solid var(--novGrey1);
+}
+
+#btnLockBaseline{
+  background:var(--novOrange);
+  color:var(--novSoftWhite);
+}
+
+#s2 .note{
+  display:none !important;
+}
+
+/* =========================================================
+   SCREEN 3 BASELINE
+   ========================================================= */
+
+#s3,
+#s3 .container{
+  background:var(--novSoftWhite);
+}
+
+.baselinePage{
+  background:var(--novSoftWhite);
+  border:none;
+  box-shadow:none;
+  border-radius:8px;
+  padding:0;
+}
+
+.baselineHeader{
+  display:flex;
+  align-items:flex-end;
+  justify-content:space-between;
+  gap:14px;
+  flex-wrap:wrap;
+  margin-bottom:12px;
+}
+
+.baselineActions{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  flex-wrap:wrap;
+}
+
+.baselineScoreTop{
+  background:var(--novGrey1);
+  border:1px solid #cfcfcf;
+  border-radius:10px;
+  padding:14px;
+  margin-bottom:12px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:14px;
+}
+
+.baselineScoreTitle{
+  font-size:18px;
+  font-weight:1000;
+  color:var(--novWarmBlack);
+}
+
+.baselineScoreSub{
+  margin-top:4px;
+  font-size:12px;
+  font-weight:800;
+  color:rgba(0,0,0,0.60);
+}
+
+.baselineScoreValueWrap{
+  text-align:right;
+}
+
+.baselineScoreRevealLabel{
+  font-size:12px;
+  font-weight:900;
+  color:rgba(0,0,0,0.60);
+}
+
+.baselineScoreValue{
+  margin-top:2px;
+  font-size:46px;
+  line-height:1;
+  font-weight:1000;
+  letter-spacing:-0.8px;
+  color:var(--novOrange);
+}
+
+.baselineScoreValue span,
+#baselineAnim{
+  color:var(--novOrange) !important;
+}
+
+.baselineBreakdownCard{
+  margin-top:0;
+  margin-bottom:16px;
+  background:var(--novGrey1);
+  border:1px solid #cfcfcf;
+  border-radius:10px;
+  padding:12px;
+  box-shadow:none;
+}
+
+.baselineBreakdownCard .baselineCardTitle{
+  margin-bottom:8px;
+}
+
+.baselineMainGrid{
+  display:grid;
+  grid-template-columns:1.15fr 0.85fr;
+  gap:16px;
+  align-items:stretch;
+  margin-top:0;
+}
+
+.baselineCard{
+  background:var(--novGrey1);
+  border:1px solid #cfcfcf;
+  border-radius:10px;
+  box-shadow:none;
+  padding:14px;
+  min-height:0;
+}
+
+.baselineCardTitle{
+  font-size:17px;
+  font-weight:1000;
+  color:var(--novWarmBlack);
+  margin-bottom:6px;
+}
+
+.baselineCardSub{
+  font-size:11px;
+  line-height:1.35;
+  font-weight:700;
+  color:rgba(0,0,0,0.58);
+  margin-bottom:10px;
+}
+
+.baselineNote{
+  background:var(--novSoftWhite);
+  border:none;
+  border-radius:6px;
+  padding:10px 11px;
+  font-size:11px;
+  line-height:1.45;
+  font-weight:850;
+  color:#333;
+  margin-bottom:9px;
+}
+
+.baselineBars,
+#bars{
+  display:grid;
+  gap:8px;
+  margin:0 0 9px 0;
+}
+
+#bars .card{
+  background:var(--novSoftWhite);
+  border:none;
+  border-radius:6px;
+  box-shadow:none;
+  padding:9px 10px;
+  min-height:48px;
+}
+
+#bars .card div[style*="font-weight:1000"]{
+  font-size:11px !important;
+}
+
+.categoryPointText{
+  font-size:9px !important;
+  font-weight:900 !important;
+  color:rgba(0,0,0,0.55) !important;
+  white-space:nowrap !important;
+}
+
+#bars .card div[style*="height:12px"]{
+  height:9px !important;
+  margin-top:7px !important;
+  border:none !important;
+  background:rgba(0,0,0,0.09) !important;
+}
+
+.baselineSelectedList,
+#selectedList{
+  display:grid;
+  gap:8px;
+  margin-top:0;
+}
+
+#selectedList .card{
+  background:var(--novSoftWhite);
+  border:none;
+  border-radius:6px;
+  box-shadow:none;
+  padding:9px 10px;
+  min-height:44px;
+  display:grid;
+  align-content:center;
+}
+
+#selectedList .card > div:first-child{
+  font-size:11px !important;
+  font-weight:1000 !important;
+  line-height:1.2 !important;
+}
+
+#selectedList .card > div:nth-child(2){
+  margin-top:4px !important;
+  font-size:9px !important;
+  font-weight:800 !important;
+  color:rgba(0,0,0,0.58) !important;
+}
+
+#scoreBreakdown{
+  display:grid !important;
+}
+
+#scoreFormulaNote{
+  display:block !important;
+}
+
+.scoreBreakdown{
+  margin-top:0;
+  display:grid;
+  grid-template-columns:repeat(6, minmax(0, 1fr));
+  gap:8px;
+}
+
+.scoreBox{
+  background:var(--novSoftWhite);
+  border:none;
+  border-radius:6px;
+  box-shadow:none;
+  padding:8px 10px;
+  min-height:58px;
+  display:grid;
+  grid-template-rows:auto auto;
+  align-content:center;
+}
+
+.scoreBoxLabel{
+  min-height:0;
+  font-size:8px;
+  line-height:1.15;
+  font-weight:1000;
+  color:rgba(0,0,0,0.58);
+  text-transform:uppercase;
+  letter-spacing:0.15px;
+}
+
+.scoreBoxValue{
+  margin-top:6px;
+  font-size:18px;
+  line-height:1;
+  font-weight:1000;
+  color:var(--novWarmBlack);
+}
+
+.scoreBoxValue.orange{
+  color:var(--novOrange);
+}
+
+.scoreFormulaNote{
+  margin-top:8px;
+  background:var(--novSoftWhite);
+  border:none;
+  border-radius:6px;
+  padding:8px 10px;
+  font-size:10px;
+  font-weight:850;
+  color:#333;
+}
+
+/* =========================================================
+   SCREEN 4 CHALLENGE CARDS
+   ========================================================= */
+
+#s4 .card.pad{
+  background:var(--novGrey1);
+}
+
+#s4 .grid-2{
+  grid-template-columns:1fr 1fr;
+  gap:28px;
+  align-items:stretch;
+}
+
+.deck{
+  border-radius:6px;
+  border:1px solid var(--novGrey1);
+  box-shadow:none;
+  background:var(--novGrey2);
+  overflow:hidden;
+  display:flex;
+  flex-direction:column;
+  min-height:310px;
+}
+
+.deck-header{
+  height:38px;
+  min-height:38px;
+  padding:9px 12px;
+  border-radius:6px 6px 0 0;
+  color:var(--novSoftWhite);
+  font-weight:1000;
+  font-size:13px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:10px;
+}
+
+.deck.blue .deck-header{
+  background:var(--deckBlue);
+}
+
+.deck.orange .deck-header{
+  background:var(--deckOrange);
+}
+
+.deck-header .pill{
+  display:none;
+}
+
+.deck-body{
+  flex:1;
+  padding:14px;
+  display:grid;
+  grid-template-rows:auto 40px auto auto 1fr;
+  gap:8px;
+  align-content:start;
+}
+
+.diceLine{
+  min-height:40px;
+  display:flex;
+  align-items:center;
+  gap:10px;
+  margin-top:8px;
+  flex-wrap:wrap;
+}
+
+.dicePicker{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  flex-wrap:wrap;
+}
+
+.diceBtn{
+  width:31px;
+  height:31px;
+  padding:0;
+  border-radius:5px;
+  border:2px solid var(--novWarmBlack);
+  background:var(--novSoftWhite);
+  cursor:pointer;
+  display:grid;
+  place-items:center;
+}
+
+.diceBtn.active{
+  border-color:var(--novOrange);
+  box-shadow:0 0 0 3px rgba(255,78,0,0.15);
+}
+
+.diceBtn:disabled{
+  opacity:0.55;
+  cursor:not-allowed;
+}
+
+.diceFace{
+  width:21px;
+  height:21px;
+  position:relative;
+  display:block;
+}
+
+.pip{
+  position:absolute;
+  width:4px;
+  height:4px;
+  border-radius:50%;
+  background:var(--novWarmBlack);
+  display:none;
+}
+
+.p1{ left:2px; top:2px; }
+.p2{ left:2px; top:8.5px; }
+.p3{ left:2px; bottom:2px; }
+.p4{ left:8.5px; top:8.5px; }
+.p5{ right:2px; top:2px; }
+.p6{ right:2px; top:8.5px; }
+.p7{ right:2px; bottom:2px; }
+
+.face-1 .p4{ display:block; }
+
+.face-2 .p1,
+.face-2 .p7{ display:block; }
+
+.face-3 .p1,
+.face-3 .p4,
+.face-3 .p7{ display:block; }
+
+.face-4 .p1,
+.face-4 .p3,
+.face-4 .p5,
+.face-4 .p7{ display:block; }
+
+.face-5 .p1,
+.face-5 .p3,
+.face-5 .p4,
+.face-5 .p5,
+.face-5 .p7{ display:block; }
+
+.face-6 .p1,
+.face-6 .p2,
+.face-6 .p3,
+.face-6 .p5,
+.face-6 .p6,
+.face-6 .p7{ display:block; }
+
+.optionalText{
+  margin-top:8px;
+  min-height:28px;
+  font-size:10px;
+  font-weight:800;
+  color:rgba(0,0,0,0.55);
+}
+
+.skipBtn{
+  background:var(--novSoftWhite);
+  color:var(--novWarmBlack);
+  border:1px solid var(--novGrey1);
+}
+
+.revealCard{
+  margin-top:12px;
+  min-height:132px;
+  display:grid;
+  grid-template-rows:38px 1fr;
+  border-radius:6px;
+  border:1px solid var(--novGrey1);
+  overflow:hidden;
+  box-shadow:none;
+  background:var(--novSoftWhite);
+}
+
+.revealHeader{
+  height:38px;
+  min-height:38px;
+  padding:10px 12px;
+  color:var(--novSoftWhite);
+  font-weight:1000;
+  font-size:13px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+}
+
+.revealHeader.blue{
+  background:var(--deckBlue);
+}
+
+.revealHeader.orange{
+  background:var(--deckOrange);
+}
+
+.revealBody{
+  min-height:94px;
+  padding:14px;
+  display:grid;
+  grid-template-rows:1fr auto;
+  color:rgba(0,0,0,0.78);
+}
+
+.effectRow{
+  min-height:42px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+}
+
+.effectNumber{
+  font-weight:1000;
+  font-size:36px;
+  letter-spacing:-1px;
+  line-height:1;
+  padding:10px 0 6px;
+  animation:popIn 0.35s ease-out forwards;
+  transform-origin:left center;
+}
+
+.effectGood{
+  color:var(--green);
+}
+
+.effectBad{
+  color:#B00020;
+}
+
+.effectNeutral{
+  color:rgba(0,0,0,0.68);
+  font-weight:700;
+  font-size:11px;
+  line-height:1.45;
+}
+
+.effectNeutral b{
+  color:var(--novWarmBlack);
+  font-weight:1000;
+}
+
+.effectCheck{
+  width:24px;
+  height:24px;
+  border-radius:50%;
+  display:grid;
+  place-items:center;
+  background:var(--green);
+  color:#fff;
+  font-weight:1000;
+  font-size:14px;
+}
+
+.locked input,
+.locked button{
+  opacity:0.55;
+  cursor:not-allowed;
+  pointer-events:none;
+  filter:grayscale(0.1);
+}
+
+@keyframes popIn{
+  0%{ transform:scale(0.86); opacity:0; }
+  70%{ transform:scale(1.06); opacity:1; }
+  100%{ transform:scale(1); opacity:1; }
+}
+
+#s4 .note{
+  display:none !important;
+}
+
+/* =========================================================
+   SCREEN 5 FINAL
+   ========================================================= */
+
+#s5 > div{
+  background:var(--uiDark) !important;
+}
+
+#s5 .card{
+  box-shadow:none !important;
+}
+
+#s5 .grid-2{
+  grid-template-columns:1fr 1fr;
+  gap:14px;
+  align-items:stretch;
+}
+
+#s5 .grid-2 > .card{
+  height:100%;
+  min-height:460px;
+  display:flex;
+  flex-direction:column;
+}
+
+#finalAnim{
+  color:var(--novOrange);
+}
+
+table{
+  width:100%;
+  border-collapse:collapse;
+  font-size:12px;
+}
+
+th,
+td{
+  height:34px;
+  padding:7px 9px;
+  border-bottom:1px solid rgba(0,0,0,0.08);
+  text-align:left;
+  vertical-align:middle;
+}
+
+th{
+  font-size:10px;
+  text-transform:uppercase;
+  letter-spacing:0.2px;
+  color:rgba(0,0,0,0.60);
+}
+
+#s5 table{
+  table-layout:fixed;
+}
+
+#s5 th:first-child,
+#s5 td:first-child{
+  width:70%;
+}
+
+#s5 th:last-child,
+#s5 td:last-child{
+  width:30%;
+  text-align:right;
+}
+
+.row-alt{
+  background:rgba(0,0,0,0.02);
+}
+
+.highlight{
+  background:#fff1cf;
+  border-left:none;
+}
+
+.rating{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:10px;
+  height:38px;
+  min-width:210px;
+  padding:12px 14px;
+  border-radius:999px;
+  border:1px solid rgba(0,0,0,0.12);
+  font-weight:1000;
+  color:#fff;
+  font-size:13px;
+  text-align:center;
+}
+
+.rating.green{ background:var(--blue); color:var(--novSoftWhite); }
+.rating.teal{ background:var(--novBlue); color:var(--novWarmBlack); }
+.rating.blue{ background:var(--novOrange); color:var(--novSoftWhite); }
+.rating.orange{ background:var(--novPink); color:var(--novWarmBlack); }
+.rating.red{ background:var(--novWarmBlack); color:var(--novSoftWhite); }
+
+#s5 .container > .card > div:last-child{
+  display:none !important;
+}
+
+.confetti-area{
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  overflow:hidden;
+}
+
+.confetti-piece{
+  position:absolute;
+  top:-10vh;
+  width:10px;
+  height:16px;
+  border-radius:3px;
+  opacity:0.85;
+  animation:confettiFall 3.2s linear infinite;
+}
+
+@keyframes confettiFall{
+  0%{ transform:translateY(-10vh) rotate(0deg); opacity:0; }
+  10%{ opacity:1; }
+  100%{ transform:translateY(110vh) rotate(720deg); opacity:0; }
+}
+
+/* =========================================================
+   TOAST WARNING
+   ========================================================= */
+
+.toast{
+  position:fixed;
+  left:50%;
+  bottom:18px;
+  transform:translateX(-50%);
+  background:var(--novWarmBlack) !important;
+  color:var(--novSoftWhite) !important;
+  padding:10px 14px !important;
+  border-radius:8px !important;
+  box-shadow:0 10px 28px rgba(0,0,0,0.25) !important;
+  border:1px solid rgba(255,255,255,0.16);
+  font-size:12px !important;
+  font-weight:800 !important;
+  display:none;
+  max-width:min(980px, 92vw);
+  z-index:2000;
+}
+
+.toast.show{
+  display:block !important;
+}
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+
+@media (max-width:1100px){
+  .scoreBreakdown{
+    grid-template-columns:repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width:980px){
+  .navbar-inner{
+    grid-template-columns:1fr;
+    height:auto;
+    padding:8px 12px;
+    justify-items:start;
+  }
+
+  .brand{
+    margin:0;
+    background:transparent;
+    padding:0;
+  }
+
+  .app-title{
+    text-align:left;
+  }
+
+  .steps{
+    justify-content:flex-start;
+  }
+
+  .grid-2,
+  #s3 .grid-2,
+  #s4 .grid-2,
+  #s5 .grid-2,
+  .baselineMainGrid{
+    grid-template-columns:1fr;
+  }
+
+  #s1 .setupTwoCards{
+    grid-template-columns:1fr;
+  }
+
+  #s1 .setupPanel{
+    height:auto;
+    min-height:174px;
+  }
+
+  #s1 .memberGrid{
+    grid-template-columns:1fr 1fr;
+  }
+
+  .factoryBoard{
+    grid-template-columns:1fr;
+    grid-template-areas:
+      "people"
+      "water"
+      "waste"
+      "energy"
+      "res";
+  }
+
+  .zoneHeader{
+    height:auto;
+    min-height:70px;
+  }
+
+  .scoreBreakdown{
+    grid-template-columns:repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width:640px){
+  .baselineScoreTop{
+    align-items:flex-start;
+    flex-direction:column;
+  }
+
+  .baselineScoreValueWrap{
+    text-align:left;
+  }
+
+  .scoreBreakdown{
+    grid-template-columns:1fr;
+  }
+
+  #s1 .memberGrid{
+    grid-template-columns:1fr;
+    grid-template-rows:auto;
+  }
+
+  #s1 .setupActions{
+    justify-content:flex-start;
+    flex-wrap:wrap;
+    height:auto;
+  }
+}
+/* Increase font size and use Arial only */
+body{
+  font-family:Arial, sans-serif !important;
+  font-size:15px !important;
+  line-height:1.45 !important;
+}
+
+/* Navbar */
+.app-title{
+  font-family:Arial, sans-serif !important;
+  font-size:17px !important;
+  font-weight:800 !important;
+}
+
+.step{
+  font-family:Arial, sans-serif !important;
+  font-size:13px !important;
+}
+
+.step .num{
+  font-family:Arial, sans-serif !important;
+  font-size:12px !important;
+}
+
+/* Headings */
+.h1{
+  font-family:Arial, sans-serif !important;
+  font-size:28px !important;
+  font-weight:900 !important;
+}
+
+.sub{
+  font-family:Arial, sans-serif !important;
+  font-size:14px !important;
+  font-weight:600 !important;
+}
+
+/* Labels and inputs */
+label{
+  font-family:Arial, sans-serif !important;
+  font-size:12px !important;
+  font-weight:800 !important;
+}
+
+input{
+  font-family:Arial, sans-serif !important;
+  font-size:14px !important;
+  font-weight:700 !important;
+}
+
+/* Buttons and pills */
+.btn,
+.pill,
+.tokenPill{
+  font-family:Arial, sans-serif !important;
+  font-size:13px !important;
+  font-weight:800 !important;
+}
+
+/* Setup page */
+#s1 .setupPanelTitle{
+  font-family:Arial, sans-serif !important;
+  font-size:16px !important;
+  font-weight:900 !important;
+}
+
+#s1 .setupField label{
+  font-family:Arial, sans-serif !important;
+  font-size:11px !important;
+}
+
+#s1 .setupField input{
+  font-family:Arial, sans-serif !important;
+  font-size:13px !important;
+}
+
+#s1 .setupMission{
+  font-family:Arial, sans-serif !important;
+  font-size:11px !important;
+}
+
+/* Build cards */
+.control .name{
+  font-family:Arial, sans-serif !important;
+  font-size:13px !important;
+  font-weight:900 !important;
+}
+
+.control .benefit{
+  font-family:Arial, sans-serif !important;
+  font-size:11px !important;
+  line-height:1.4 !important;
+}
+
+.control .selectBtn{
+  font-family:Arial, sans-serif !important;
+  font-size:11px !important;
+}
+
+.zoneHeader > div:first-child{
+  font-family:Arial, sans-serif !important;
+  font-size:13px !important;
+}
+
+/* Baseline and final */
+.baselineCardTitle,
+.baselineScoreTitle{
+  font-family:Arial, sans-serif !important;
+  font-size:18px !important;
+}
+
+.scoreBoxLabel{
+  font-family:Arial, sans-serif !important;
+  font-size:9px !important;
+}
+
+.scoreBoxValue{
+  font-family:Arial, sans-serif !important;
+  font-size:20px !important;
+}
+
+.categoryPointText{
+  font-family:Arial, sans-serif !important;
+  font-size:10px !important;
+}
+
+table{
+  font-family:Arial, sans-serif !important;
+  font-size:13px !important;
+}
+
+th{
+  font-family:Arial, sans-serif !important;
+  font-size:11px !important;
+}
+
+td{
+  font-family:Arial, sans-serif !important;
+  font-size:13px !important;
+}
+
+/* Event cards */
+.deck-header,
+.revealHeader{
+  font-family:Arial, sans-serif !important;
+  font-size:14px !important;
+}
+
+.effectNumber{
+  font-family:Arial, sans-serif !important;
+  font-size:38px !important;
+}
+
+.effectNeutral{
+  font-family:Arial, sans-serif !important;
+  font-size:12px !important;
+}
+
+.rating{
+  font-family:Arial, sans-serif !important;
+  font-size:14px !important;
+}
+
+/* =========================================================
+   SPACING FIX TO REDUCE CROWDING
+   Keep Arial and readable sizing, add breathing room
+   ========================================================= */
+
+body{
+  font-family:Arial, sans-serif !important;
+  font-size:14px !important;
+  line-height:1.5 !important;
+}
+
+/* Page spacing */
+.container{
+  padding:16px 18px 22px !important;
+}
+
+/* Navbar spacing */
+.navbar-inner{
+  height:52px !important;
+  padding:0 18px !important;
+  gap:18px !important;
+}
+
+.steps{
+  gap:10px !important;
+}
+
+.step{
+  height:30px !important;
+  padding:4px 12px 4px 5px !important;
+  gap:8px !important;
+  font-size:11px !important;
+}
+
+.step .num{
+  width:22px !important;
+  height:22px !important;
+  font-size:10px !important;
+}
+
+/* Hero spacing */
+.hero{
+  margin-bottom:18px !important;
+}
+
+.hero-inner{
+  min-height:40px !important;
+  padding:8px 16px !important;
+}
+
+.hero-mission{
+  font-size:12px !important;
+  line-height:1.4 !important;
+}
+
+.hero-inner .pill{
+  font-size:14px !important;
+  padding:9px 22px !important;
+}
+
+.scene{
+  height:240px !important;
+}
+
+/* Screen 1 two cards */
+#s1 .setupTwoCards{
+  margin-top:18px !important;
+  gap:20px !important;
+  grid-template-columns:1.35fr 1fr !important;
+}
+
+/* Make setup cards taller and less cramped */
+#s1 .setupPanel{
+  min-height:230px !important;
+  height:230px !important;
+  padding:20px !important;
+  grid-template-rows:30px 1fr !important;
+}
+
+/* Card titles */
+#s1 .setupPanelTitle{
+  height:30px !important;
+  min-height:30px !important;
+  font-size:15px !important;
+  margin-bottom:12px !important;
+}
+
+#s1 .setupTitleIcon{
+  width:16px !important;
+  height:16px !important;
+}
+
+/* Factory setup fields */
+#s1 .setupFields{
+  margin-top:10px !important;
+  grid-template-rows:50px 50px 44px !important;
+  gap:14px !important;
+}
+
+/* Team member grid */
+#s1 .memberGrid{
+  margin-top:10px !important;
+  grid-template-rows:50px 50px 44px !important;
+  gap:14px 18px !important;
+}
+
+/* Field blocks */
+#s1 .setupField{
+  grid-template-rows:16px 32px !important;
+  gap:4px !important;
+}
+
+/* Labels */
+#s1 .setupField label,
+#s1 label{
+  height:16px !important;
+  min-height:16px !important;
+  line-height:16px !important;
+  font-size:10px !important;
+}
+
+/* Inputs */
+#s1 .setupField input,
+#s1 input{
+  height:32px !important;
+  min-height:32px !important;
+  padding:7px 10px !important;
+  font-size:12px !important;
+  line-height:18px !important;
+}
+
+/* Mission strip */
+#s1 .setupMission{
+  height:44px !important;
+  min-height:44px !important;
+  padding:8px 12px !important;
+  font-size:10px !important;
+  line-height:1.3 !important;
+}
+
+/* Buttons row */
+#s1 .setupActions{
+  height:44px !important;
+  min-height:44px !important;
+  gap:14px !important;
+}
+
+#s1 .setupActions .btn{
+  height:32px !important;
+  min-height:32px !important;
+  padding:7px 16px !important;
+  font-size:11px !important;
+}
+
+#s1 .setupActions .btn.secondary{
+  min-width:82px !important;
+}
+
+#s1 #btnBeginBuild{
+  min-width:165px !important;
+}
+
+/* Prevent tiny text in setup */
+#s1 .setupPanelTitle small{
+  font-size:9px !important;
+}
+
+/* General card spacing for other screens */
+.card.pad{
+  padding:16px !important;
+}
+
+.grid-2{
+  gap:18px !important;
+}
+
+/* Build phase spacing */
+.factoryBoard{
+  gap:14px !important;
+  margin-top:14px !important;
+}
+
+.zoneBody{
+  gap:10px !important;
+  padding:10px !important;
+}
+
+.control{
+  min-height:104px !important;
+  padding:11px !important;
+  gap:7px !important;
+}
+
+.control .name{
+  font-size:12px !important;
+  min-height:32px !important;
+}
+
+.control .benefit{
+  font-size:10px !important;
+  min-height:42px !important;
+}
+
+.control .selectBtn{
+  height:28px !important;
+  min-height:28px !important;
+}
+
+/* Baseline spacing */
+.baselineScoreTop,
+.baselineBreakdownCard,
+.baselineCard{
+  padding:18px !important;
+}
+
+.baselineMainGrid{
+  gap:18px !important;
+}
+
+.scoreBreakdown{
+  gap:10px !important;
+}
+
+.scoreBox{
+  min-height:68px !important;
+  padding:10px 12px !important;
+}
+
+#bars{
+  gap:10px !important;
+}
+
+#bars .card,
+#selectedList .card{
+  padding:10px 12px !important;
+  min-height:52px !important;
+}
+
+/* Round 2 spacing */
+#s4 .grid-2{
+  gap:32px !important;
+}
+
+.deck-body{
+  padding:18px !important;
+  gap:12px !important;
+}
+
+.revealCard{
+  min-height:150px !important;
+}
+
+.revealBody{
+  padding:16px !important;
+}
+
+/* Final spacing */
+#s5 .grid-2{
+  gap:18px !important;
+}
+
+#finalControls{
+  gap:10px !important;
+}
+
+/* Responsive */
+@media (max-width:980px){
+  #s1 .setupTwoCards{
+    grid-template-columns:1fr !important;
+  }
+
+  #s1 .setupPanel{
+    height:auto !important;
+    min-height:230px !important;
+  }
+
+  #s1 .memberGrid{
+    grid-template-columns:1fr 1fr !important;
+  }
+}
+
+@media (max-width:640px){
+  #s1 .memberGrid{
+    grid-template-columns:1fr !important;
+  }
+
+  #s1 .setupActions{
+    justify-content:flex-start !important;
+    flex-wrap:wrap !important;
+    height:auto !important;
+  }
+}
+
+/* =========================================================
+   COMPACT BUTTONS AND PILLS TO PREVENT CONTENT CUT OFF
+   Paste at the very end of style block
+   ========================================================= */
+
+/* Navbar height reduced */
+.navbar{
+  min-height:42px !important;
+}
+
+.navbar-inner{
+  height:42px !important;
+  padding:0 14px !important;
+}
+
+/* Journey step buttons smaller */
+.steps{
+  gap:6px !important;
+}
+
+.step{
+  height:24px !important;
+  padding:3px 9px 3px 4px !important;
+  gap:6px !important;
+  font-size:10px !important;
+  line-height:1 !important;
+}
+
+.step .num{
+  width:18px !important;
+  height:18px !important;
+  font-size:9px !important;
+}
+
+/* General buttons smaller */
+.btn{
+  height:26px !important;
+  min-height:26px !important;
+  padding:5px 12px !important;
+  font-size:10px !important;
+  line-height:1 !important;
+}
+
+/* Setup page buttons */
+#s1 .setupActions .btn{
+  height:28px !important;
+  min-height:28px !important;
+  padding:5px 12px !important;
+  font-size:10px !important;
+}
+
+#s1 .setupActions .btn.secondary{
+  min-width:68px !important;
+}
+
+#s1 #btnBeginBuild{
+  min-width:145px !important;
+}
+
+/* Hero token budget pill smaller */
+.hero-inner .pill{
+  font-size:13px !important;
+  padding:7px 18px !important;
+  min-height:28px !important;
+}
+
+/* Hero ribbon height smaller */
+.hero-inner{
+  min-height:32px !important;
+  padding:5px 12px !important;
+}
+
+/* Build phase action buttons */
+#btnClear,
+#btnLockBaseline{
+  height:28px !important;
+  min-height:28px !important;
+  padding:6px 12px !important;
+  font-size:10px !important;
+}
+
+/* Control invest buttons */
+.control .selectBtn{
+  height:24px !important;
+  min-height:24px !important;
+  padding:4px 8px !important;
+  font-size:9px !important;
+}
+
+/* Round 2 reveal and skip buttons */
+#btnRevealBlue,
+#btnRevealOrange,
+#btnSkipOrange,
+#btnCalcFinal,
+#btnBackToBaseline{
+  height:28px !important;
+  min-height:28px !important;
+  padding:6px 12px !important;
+  font-size:10px !important;
+}
+
+/* Final page buttons */
+#btnBackToCards,
+#btnSaveScore,
+#btnResetNextTeam{
+  height:28px !important;
+  min-height:28px !important;
+  padding:6px 12px !important;
+  font-size:10px !important;
+}
+
+/* Generic pills */
+.pill,
+.tokenPill{
+  min-height:26px !important;
+  padding:5px 10px !important;
+  font-size:10px !important;
+}
+
+/* Fix mission text being cut off */
+#s1 .setupPanel{
+  height:auto !important;
+  min-height:190px !important;
+  overflow:visible !important;
+}
+
+#s1 .setupFields{
+  grid-template-rows:42px 42px auto !important;
+}
+
+#s1 .setupMission{
+  height:auto !important;
+  min-height:42px !important;
+  overflow:visible !important;
+  white-space:normal !important;
+  display:flex !important;
+  align-items:center !important;
+  padding:8px 12px !important;
+  line-height:1.25 !important;
+  font-size:10px !important;
+}
+/* Final page table header emphasis */
+#s5 th{
+  color:var(--novWarmBlack) !important;
+  font-weight:1000 !important;
+  font-size:12px !important;
+  background:rgba(255,78,0,0.12) !important;
+}
+
+/* Final left card: use vertical space better and reduce crowding */
+#s5 .finalScoreCard{
+  display:flex !important;
+  flex-direction:column !important;
+  justify-content:space-between !important;
+  gap:14px !important;
+}
+
+#s5 .finalTableWrap{
+  margin-top:6px !important;
+}
+
+#s5 .finalRatingBlock{
+  margin-top:0 !important;
+  gap:12px !important;
+}
+
+#s5 .badgePlaceholderBox{
+  max-width:300px !important;
+  width:100% !important;
+  min-height:200px !important;
+  display:grid !important;
+  align-content:start !important;
+  justify-items:center !important;
+}
+
+#s5 .badgePlaceholderBox img{
+  height:150px !important;
+}
+
+/* =========================================================
+   SCREEN 3 BASELINE CARDS SAME HEIGHT FIX
+   Paste at the very end of style block
+   ========================================================= */
+
+#s3 .baselineMainGrid{
+  align-items:stretch !important;
+  grid-auto-rows:1fr !important;
+}
+
+#s3 .baselineMainGrid > .baselineCard{
+  height:100% !important;
+  min-height:100% !important;
+  display:flex !important;
+  flex-direction:column !important;
+}
+
+/* Make both inner content areas participate in the height */
+#s3 #bars,
+#s3 #selectedList{
+  flex:1 1 auto !important;
+}
+
+/* Keep the balance bonus note at the bottom of the left card */
+#s3 .baselineMainGrid > .baselineCard:first-child .baselineNote:last-child{
+  margin-top:auto !important;
+  margin-bottom:0 !important;
+}
+
+/* Remove bottom margin from the last item in the right card */
+#s3 #selectedList{
+  margin-bottom:0 !important;
+}
+
+/* Optional: visually spread the category rows so the left card does not look empty */
+#s3 #bars{
+  display:flex !important;
+  flex-direction:column !important;
+  gap:10px !important;
+}
+
+</style>
+</head>
+<body>
+
+  <header class="navbar" role="banner">
+    <div class="navbar-inner">
+      <div class="brand" aria-label="Novartis">
+  <img src="https://share.novartis.net/:i:/r/sites/TechOpsFair-HSEESbooth/Shared%20Documents/Digital%20board/Images/Logo%20Soft%20White%20RGB.png?d=wdc9bbadc10d14dc5bd9e8e92bae3bfd9&csf=1&web=1&e=mMbg6w" alt="Novartis logo" class="novartisLogo">
+</div>
+
+      <div class="app-title">Build Your Sustainable Factory</div>
+
+      <div class="steps" aria-label="Step progress indicator">
+        <div class="step" id="step1"><span class="num">1</span>Setup</div>
+        <div class="step" id="step2"><span class="num">2</span>Build</div>
+        <div class="step" id="step3"><span class="num">3</span>Baseline</div>
+        <div class="step" id="step4"><span class="num">4</span>Cards</div>
+        <div class="step" id="step5"><span class="num">5</span>Final</div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <!-- SCREEN 1 -->
+<section id="s1" class="screen active" aria-label="Team Setup">
+  <div class="container">
+
+    <div class="hero">
+      <div class="hero-overlay" aria-hidden="true"></div>
+
+      <div class="hero-inner">
+        <div>
+          <div class="hero-title">Build Your Sustainable Factory</div>
+          <div class="hero-mission">
+            Mission: <b>Build the safest, most sustainable and most resilient manufacturing site</b> using only <b>15 tokens</b>.
+          </div>
+        </div>
+        <div class="pill">Token Budget: 15</div>
+      </div>
+
+      <div class="scene" aria-hidden="true">
+        <div class="solarField">
+          <div class="panel"></div><div class="panel"></div><div class="panel"></div><div class="panel"></div><div class="panel"></div>
+          <div class="panel"></div><div class="panel"></div><div class="panel"></div><div class="panel"></div><div class="panel"></div>
+          <div class="panel"></div><div class="panel"></div><div class="panel"></div><div class="panel"></div><div class="panel"></div>
+        </div>
+
+        <div class="pool"></div>
+
+        <div class="tree t1"></div><div class="tree t2"></div><div class="tree t3"></div>
+        <div class="tree t4"></div><div class="tree t5"></div>
+
+        <div class="building bA">
+          <div class="roof"></div>
+          <div class="windows">
+            <div class="win"></div><div class="win"></div><div class="win"></div><div class="win"></div><div class="win"></div><div class="win"></div>
+            <div class="win"></div><div class="win"></div><div class="win"></div><div class="win"></div><div class="win"></div><div class="win"></div>
+            <div class="win"></div><div class="win"></div><div class="win"></div><div class="win"></div><div class="win"></div><div class="win"></div>
+            <div class="win"></div><div class="win"></div><div class="win"></div><div class="win"></div><div class="win"></div><div class="win"></div>
+          </div>
+        </div>
+
+        <div class="building bB">
+          <div class="roof"></div>
+          <div class="windows">
+            <div class="win"></div><div class="win"></div><div class="win"></div><div class="win"></div><div class="win"></div><div class="win"></div>
+            <div class="win"></div><div class="win"></div><div class="win"></div><div class="win"></div><div class="win"></div><div class="win"></div>
+            <div class="win"></div><div class="win"></div><div class="win"></div><div class="win"></div><div class="win"></div><div class="win"></div>
+          </div>
+        </div>
+
+        <div class="building bC">
+          <div class="roof"></div>
+          <div class="windows">
+            <div class="win"></div><div class="win"></div><div class="win"></div><div class="win"></div><div class="win"></div><div class="win"></div>
+            <div class="win"></div><div class="win"></div><div class="win"></div><div class="win"></div><div class="win"></div><div class="win"></div>
+          </div>
+        </div>
+
+        <div class="road"><div class="lane"></div></div>
+      </div>
+    </div>
+
+    <div class="setupTwoCards">
+
+  <div class="setupPanel setupFactoryPanel">
+    <div class="setupPanelTitle factoryTitle">
+      <span>
+        <img src="https://share.novartis.net/:i:/r/sites/TechOpsFair-HSEESbooth/Shared%20Documents/Digital%20board/Images/factory_icon.png?d=wcd4a036f007c4aa7bbba268274e3c11b&csf=1&web=1&e=KXFGX0" alt="" class="setupTitleIcon">
+        Factory setup
+      </span>
+    </div>
+
+    <div class="setupFields">
+      <div class="setupField">
+        <label for="teamName">Team Name</label>
+        <input id="teamName" type="text"  placeholder="e.g., Team EcoWorks">
+      </div>
+
+      <div class="setupField">
+        <label for="factoryName">Factory Name</label>
+        <input id="factoryName" type="text"  placeholder="Choose or type a factory name">
+      </div>
+
+      <div class="setupMission">
+        <b>Mission text:</b> Build the safest, most sustainable and most resilient manufacturing site using only 15 investment tokens.
+      </div>
+    </div>
+  </div>
+
+  <div class="setupPanel setupTeamPanel">
+    <div class="setupPanelTitle teamTitle">
+      <span>
+        <img src="https://share.novartis.net/:i:/r/sites/TechOpsFair-HSEESbooth/Shared%20Documents/Digital%20board/Images/team_members_icon.png?d=w8bb3f04fa19d48a991cfa12098b6e193&csf=1&web=1&e=6lJJaa" alt="" class="setupTitleIcon">
+        Team members
+      </span>
+      <small>UP TO 4</small>
+    </div>
+
+    <div class="memberGrid">
+      <div class="setupField">
+        <label for="m1">Member 1</label>
+        <input id="m1" type="text"  placeholder="Name">
+      </div>
+
+      <div class="setupField">
+        <label for="m3">Member 3</label>
+        <input id="m3" type="text" value="" placeholder="Optional">
+      </div>
+
+      <div class="setupField">
+        <label for="m2">Member 2</label>
+        <input id="m2" type="text" placeholder="Name">
+      </div>
+
+      <div class="setupField">
+        <label for="m4">Member 4</label>
+        <input id="m4" type="text" value="" placeholder="Optional">
+      </div>
+
+      <div class="setupActions">
+        <button class="btn secondary" id="btnResetAll">Reset</button>
+        <button class="btn" id="btnBeginBuild">Begin Build Phase</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+  </div>
+</section>
+
+    <!-- SCREEN 2 -->
+    <section id="s2" class="screen" aria-label="Factory Board Build Screen">
+      <div class="container">
+        <div class="card pad">
+          <div style="display:flex; justify-content:space-between; align-items:flex-end; gap:12px; flex-wrap:wrap;">
+            <div>
+              <h1 class="h1">Build Phase</h1>
+              <div class="sub">Select controls across zones. Individual token costs are hidden; budget enforcement is automatic.</div>
+            </div>
+            <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
+              <div class="pill" id="teamInfo">Team EcoWarriors • Green Horizon</div>
+              <button class="btn secondary" id="btnBackToSetup">Back</button>
+            </div>
+          </div>
+
+          <div class="stickyTop" style="margin-top:14px;">
+            <div class="stickyRow">
+              <div class="tokenPill ok" id="tokenPill">Tokens Placed: <span id="tokensPlaced">0</span> / 15</div>
+            </div>
+          </div>
+
+          <div class="factoryBoard">
+            <div class="zone" style="grid-area: people;">
+              <div class="zoneHeader" style="background: linear-gradient(135deg, rgba(21,101,192,0.98), rgba(21,101,192,0.75));">
+                <div>Protect People</div>
+                <div style="font-size:12px; opacity:0.92; font-weight:900;">Top Left</div>
+              </div>
+              <div class="zoneBody" id="zone-people"></div>
+            </div>
+
+            <div class="zone" style="grid-area: water;">
+              <div class="zoneHeader" style="background: linear-gradient(135deg, rgba(0,151,167,0.98), rgba(0,151,167,0.75));">
+                <div>Protect Water</div>
+                <div style="font-size:12px; opacity:0.92; font-weight:900;">Top Right</div>
+              </div>
+              <div class="zoneBody" id="zone-water"></div>
+            </div>
+
+            <div class="zone" style="grid-area: waste;">
+              <div class="zoneHeader" style="background: linear-gradient(135deg, rgba(46,125,50,0.98), rgba(46,125,50,0.75));">
+                <div>Reduce Waste</div>
+                <div style="font-size:12px; opacity:0.92; font-weight:900;">Middle Left</div>
+              </div>
+              <div class="zoneBody" id="zone-waste"></div>
+            </div>
+
+            <div class="zone" style="grid-area: energy;">
+              <div class="zoneHeader" style="background: linear-gradient(135deg, rgba(230,81,0,0.98), rgba(230,81,0,0.75));">
+                <div>Energy &amp; Carbon</div>
+                <div style="font-size:12px; opacity:0.92; font-weight:900;">Middle Right</div>
+              </div>
+              <div class="zoneBody" id="zone-energy"></div>
+            </div>
+
+            <div class="zone" style="grid-area: res;">
+              <div class="zoneHeader" style="background: linear-gradient(135deg, rgba(106,27,154,0.98), rgba(106,27,154,0.75));">
+                <div>Build Resilience</div>
+                <div style="font-size:12px; opacity:0.92; font-weight:900;">Bottom</div>
+              </div>
+              <div class="zoneBody" id="zone-res"></div>
+            </div>
+          </div>
+
+          <div style="margin-top:16px; display:flex; justify-content:space-between; gap:10px; flex-wrap:wrap;">
+            <button class="btn secondary" id="btnClear">Clear Selections</button>
+            <button class="btn" id="btnLockBaseline" disabled>Lock Factory and Calculate Baseline</button>
+          </div>
+
+          <div class="note">
+            <b>Rule:</b> If selecting a control would exceed 15 tokens, the app shows a warning toast and prevents selection.
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SCREEN 3 -->
+<section id="s3" class="screen" aria-label="Baseline Reveal">
+  <div class="container">
+    <div class="baselinePage">
+
+      <div class="baselineHeader">
+        <div>
+          <h1 class="h1">Baseline Reveal</h1>
+          <div class="sub">Baseline shown out of 70. Token costs are never displayed.</div>
+        </div>
+
+        <div class="baselineActions">
+          <button class="btn secondary" id="btnBackToBuild">Back</button>
+          <button class="btn" id="btnToCards">Proceed to Round 2</button>
+        </div>
+      </div>
+
+      <div class="baselineScoreTop">
+        <div>
+          <div class="baselineScoreTitle">Baseline Score</div>
+          <div class="baselineScoreSub">Out of 70</div>
+        </div>
+
+        <div class="baselineScoreValueWrap">
+          <div class="baselineScoreRevealLabel">Animated reveal</div>
+          <div class="baselineScoreValue">
+            <span id="baselineAnim">0</span> <span>/ 70</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="baselineBreakdownCard">
+        <div class="baselineCardTitle">Score Breakdown</div>
+
+        <div id="scoreBreakdown" class="scoreBreakdown"></div>
+      </div>
+
+      <div class="baselineMainGrid">
+
+        <div class="baselineCard">
+          <div class="baselineCardTitle">Category Breakdown</div>
+
+          <div class="baselineNote">
+            Category breakdown relative to caps. Values are calculated in background.
+          </div>
+
+          <div id="bars" class="baselineBars"></div>
+
+          <div class="baselineNote">
+            <b>Balance bonus:</b> <span id="balText">—</span>
+          </div>
+        </div>
+
+        <div class="baselineCard">
+          <div class="baselineCardTitle">Selected Controls</div>
+          <div class="baselineCardSub">Summary only. No costs shown.</div>
+
+          <div id="selectedList" class="baselineSelectedList"></div>
+        </div>
+
+      </div>
+
+      
+
+    </div>
+  </div>
+</section>
+
+    <!-- SCREEN 4 -->
+<section id="s4" class="screen" aria-label="Round 2 Cards">
+  <div class="container">
+    <div class="card pad">
+      <div style="display:flex; justify-content:space-between; align-items:flex-end; gap:12px; flex-wrap:wrap;">
+        <div>
+          <h1 class="h1">Round 2 — Challenge Cards</h1>
+          <div class="sub">The dice has been rolled physically. Enter the dice value below to reveal the card.</div>
+        </div>
+        <div style="display:flex; gap:10px; flex-wrap:wrap;">
+          <button class="btn secondary" id="btnBackToBaseline">Back</button>
+          <button class="btn secondary skipBtn" id="btnSkipOrange" disabled>Skip Major Disruption</button>
+          <button class="btn" id="btnCalcFinal" style="display:none;">Calculate Final Score</button>
+        </div>
+      </div>
+
+      <div style="margin-top:14px;" class="grid-2">
+        <div id="bluePanel" class="deck blue">
+          <div class="deck-header">
+            <div>Operational Challenge</div>
+            <div class="pill">Blue</div>
+          </div>
+          <div class="deck-body">
+            <label>Dice value 1–6</label>
+            <div class="diceLine">
+              <div class="dicePicker" id="blueDicePicker" aria-label="Operational challenge dice picker"></div>
+              <button class="btn blue" id="btnRevealBlue">Reveal Card</button>
+            </div>
+
+            <div class="revealCard" id="blueReveal" style="display:none;">
+              <div class="revealHeader blue" id="blueTitle">Operational Challenge</div>
+              <div class="revealBody">
+                <div class="effectRow">
+                  <div class="effectNumber" id="blueEffectNum">+0</div>
+                  <div class="effectCheck">✓</div>
+                </div>
+                <div class="effectNeutral">Event applied to your score.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div id="orangePanel" class="deck orange">
+          <div class="deck-header">
+            <div>Major Disruption</div>
+            <div class="pill" style="background: rgba(255,255,255,0.22); border-color: rgba(0,0,0,0.12); color:#1b1400;">Orange</div>
+          </div>
+          <div class="deck-body">
+            <label>Dice value 1–6</label>
+            <div class="diceLine">
+              <div class="dicePicker" id="orangeDicePicker" aria-label="Major disruption dice picker"></div>
+              <button class="btn orange" id="btnRevealOrange">Reveal Card</button>
+            </div>
+
+            <div class="revealCard" id="orangeReveal" style="display:none;">
+              <div class="revealHeader orange" id="orangeTitle">Major Disruption</div>
+              <div class="revealBody">
+                <div class="effectRow">
+                  <div class="effectNumber" id="orangeEffectNum">+0</div>
+                  <div class="effectCheck">✓</div>
+                </div>
+                <div class="effectNeutral">Event applied to your score.</div>
+              </div>
+            </div>
+
+            <div class="optionalText">
+              Major Disruption is optional. You may skip it after revealing the Operational Challenge.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="note">
+        Operational Challenge is required. Major Disruption is optional. Cards are drawn once and locked.
+      </div>
+    </div>
+  </div>
+</section>
+
+    <!-- SCREEN 5 -->
+    <section id="s5" class="screen" aria-label="Final Score">
+      <div style="position:relative; min-height: calc(100vh - 72px); background: linear-gradient(135deg, #061A2A 0%, var(--blue) 55%, rgba(0,120,212,0.18) 100%); color:white;">
+        <div class="confetti-area" id="confettiFinal"></div>
+
+        <div class="container">
+          <div class="card" style="background: rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.14); box-shadow: var(--shadowLg); border-radius: var(--radius); padding: 18px; color:white;">
+            <div style="display:flex; justify-content:space-between; align-items:flex-end; gap:12px; flex-wrap:wrap;">
+              <div>
+                <div style="font-size:28px; font-weight:1000;">Final Score</div>
+                <div style="margin-top:6px; color: rgba(255,255,255,0.80); font-weight:700; line-height:1.6;">
+                  Baseline + Operational challenge + Major disruption (cap 0–100)
+                </div>
+              </div>
+              <div style="display:flex; gap:10px; flex-wrap:wrap;">
+  <button class="btn secondary" id="btnBackToCards">Back</button>
+  <button class="btn" id="btnSaveScore">Save Score</button>
+  <button class="btn" id="btnResetNextTeam">Reset for Next Team</button>
+</div>
+            </div>
+
+            <div style="margin-top:14px;" class="grid-2">
+              <div class="card pad finalScoreCard" style="background: rgba(255,255,255,0.92); color: var(--text);">
+                <div style="display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap;">
+                  <div>
+                    <div style="font-weight:1000; font-size:18px;">Final Score</div>
+                    <div style="margin-top:6px; color: rgba(0,0,0,0.60); font-weight:700;">Animated reveal</div>
+                  </div>
+                  <div style="font-size:44px; font-weight:1000; letter-spacing:-0.8px; color: var(--blue);">
+                    <span id="finalAnim">0</span>
+                  </div>
+                </div>
+
+                <div class="finalTableWrap" style="margin-top:12px; overflow:auto; border-radius:12px; border:1px solid rgba(0,0,0,0.10);">
+                  <table>
+                    <thead><tr><th>Component</th><th>Value</th></tr></thead>
+                    <tbody>
+                      <tr class="row-alt"><td><b>Baseline</b></td><td id="finalBase">0</td></tr>
+                      <tr><td><b>Operational challenge</b></td><td id="finalBlue">0</td></tr>
+                      <tr class="row-alt"><td><b>Major disruption</b></td><td id="finalOrange">0</td></tr>
+                      <tr class="highlight"><td><b>Total (0–100)</b></td><td id="finalTotal">0</td></tr>
+                    </tbody>
+                  </table>
+                </div>
+
+                <div class="finalRatingBlock" style="margin-top:12px; display:grid; gap:10px; place-items:center;">
+                  <div class="rating" id="ratingBadge">Rating</div>
+                  <div style="font-weight:900; color: rgba(0,0,0,0.70); text-align:center;" id="ratingMsg"></div>
+                  <div class="badgePlaceholderBox" style="width:100%; max-width:260px; border:2px dashed rgba(0,0,0,0.2); border-radius:12px; padding:12px; text-align:center; background:rgba(255,255,255,0.7);">
+                    <div style="font-weight:900; color:rgba(0,0,0,0.65);">Badge Placeholder</div>
+                    <img src="" alt="Badge image placeholder" style="display:block; width:100%; height:120px; object-fit:contain; margin-top:8px;">
+                  </div>
+                </div>
+              </div>
+
+              <div class="card pad" style="background: rgba(255,255,255,0.92); color: var(--text);">
+                <div style="font-weight:1000; font-size:18px;">Selected Controls</div>
+                <div style="margin-top:8px; color: rgba(0,0,0,0.60); font-weight:700; line-height:1.6;">
+                  Summary of selected controls (no costs shown).
+                </div>
+                <div id="finalControls" style="margin-top:12px; display:grid; gap:10px;"></div>
+              </div>
+            </div>
+
+            <div style="margin-top:14px; text-align:center; color: rgba(255,255,255,0.78); font-weight:800;">
+              Build safer, more sustainable factories—together.
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script>
+    (function(){
+      // ---------------------------
+      // Requirements: no costs displayed anywhere.
+      // Costs exist ONLY here in JS data for enforcement/scoring.
+      // ---------------------------
+      const TOKEN_LIMIT = 15;
+
+      const CAPS = { Safety:15, Water:15, Environment:15, Energy:10, ComplianceResilience:15 };
+
+      const CATEGORIES = [
+        { id:"people", zoneId:"zone-people", color:getCss("--zonePeople"), controls:[
+          { id:"safeEquipment", name:"Safe equipment design", cost:3, benefit:"Machine guarding, interlocks, safe access and ergonomic design", hidden:{Safety:6, Resilience:1}},
+          { id:"ptw", name:"Digital permit-to-work", cost:2, benefit:"Structured authorization for high-risk work", hidden:{Safety:3, Compliance:2}},
+          { id:"contractorHub", name:"Contractor safety hub", cost:2, benefit:"Onboarding, competency checks, briefings and field supervision", hidden:{Safety:4, Compliance:1}},
+          { id:"erc", name:"Emergency response centre", cost:2, benefit:"Alarms, equipment, trained responders and communication", hidden:{Safety:3, Resilience:2}},
+          { id:"ergo", name:"Ergonomic workstations", cost:1, benefit:"Adjustable workspaces, lifting aids and safer material handling", hidden:{Safety:3}},
+        ]},
+        { id:"water", zoneId:"zone-water", color:getCss("--zoneWater"), controls:[
+          { id:"subMeter", name:"Water sub-metering", cost:1, benefit:"Area-level visibility of consumption and abnormal use", hidden:{Water:3}},
+          { id:"recycling", name:"Water recycling system", cost:4, benefit:"Treats and reuses suitable water within the site", hidden:{Water:6, Environment:3}},
+          { id:"wastewaterMon", name:"Advanced wastewater monitoring", cost:2, benefit:"Earlier detection of wastewater treatment deviations", hidden:{Water:3, Compliance:2}},
+          { id:"rainwater", name:"Rainwater management", cost:2, benefit:"Stormwater control, drainage and suitable harvesting", hidden:{Water:2, Resilience:3}},
+          { id:"closedLoopClean", name:"Closed-loop cleaning", cost:3, benefit:"Optimizes cleaning and reuses suitable water", hidden:{Water:5, Environment:2}},
+        ]},
+        { id:"waste", zoneId:"zone-waste", color:getCss("--zoneWaste"), controls:[
+          { id:"segregation", name:"Waste segregation at source", cost:1, benefit:"Correctly positioned and labelled collection points", hidden:{Environment:3}},
+          { id:"solventRecovery", name:"Solvent recovery", cost:3, benefit:"Recovers suitable solvents for reuse or beneficial recovery", hidden:{Environment:5, Energy:1, Resilience:1}},
+          { id:"circularPackaging", name:"Circular packaging system", cost:2, benefit:"Reusable transit packaging and optimized material design", hidden:{Environment:4, Energy:1}},
+          { id:"wasteTracking", name:"Waste generation tracking", cost:1, benefit:"Measures waste by area and waste type", hidden:{Environment:3}},
+          { id:"greenChem", name:"Green chemistry / process optimization", cost:4, benefit:"Prevents hazardous material use and waste at source", hidden:{Environment:6, Safety:2, Compliance:1}},
+        ]},
+        { id:"energy", zoneId:"zone-energy", color:getCss("--zoneEnergy"), controls:[
+          { id:"solar", name:"Solar energy", cost:3, benefit:"Renewable energy for a portion of site demand", hidden:{Energy:6, Resilience:1}},
+          { id:"efficientUtilities", name:"Energy-efficient utilities", cost:2, benefit:"Efficient HVAC, chilled water, steam and compressed air", hidden:{Energy:5}},
+          { id:"heatRecovery", name:"Heat recovery", cost:2, benefit:"Captures waste heat for useful reuse", hidden:{Energy:5}},
+          { id:"energyMonitoring", name:"Smart energy monitoring", cost:1, benefit:"Area-level energy monitoring and alerts", hidden:{Energy:3}},
+          { id:"electricLogistics", name:"Electric site logistics", cost:2, benefit:"Electric material movement and charging infrastructure", hidden:{Energy:4, Environment:1}},
+        ]},
+        { id:"res", zoneId:"zone-res", color:getCss("--zoneRes"), controls:[
+          { id:"predictiveMaint", name:"Predictive equipment maintenance", cost:2, benefit:"Identifies potential failures before breakdown", hidden:{Resilience:4, Safety:1}},
+          { id:"complianceCentre", name:"Digital compliance control centre", cost:2, benefit:"Tracks obligations, owners, evidence and actions", hidden:{Compliance:5}},
+          { id:"biodiversity", name:"Biodiversity buffer", cost:1, benefit:"Native vegetation and habitat areas at suitable boundaries", hidden:{Environment:2, Resilience:1}},
+          { id:"climateInfra", name:"Climate-resilient infrastructure", cost:3, benefit:"Protects critical systems from heat and extreme rainfall", hidden:{Resilience:6, Safety:1}},
+        ]}
+      ];
+
+      const BLUE = {
+  1: {
+    title:"Water use increases by 18%",
+    protection:[ ["subMeter",4], ["closedLoopClean",2], ["recycling",2] ],
+    gainText:"Water sub-metering +4; closed-loop cleaning +2; water recycling +2",
+    exposureText:"No metering -3; no water control -5",
+    leverage:"Water sub-metering",
+    penalty:-5,
+    cap:8,
+    exposure:function(selected){
+      const hasWaterControl = selected.has("subMeter") || selected.has("closedLoopClean") || selected.has("recycling");
+      if(!hasWaterControl) return -5;
+      if(!selected.has("subMeter")) return -3;
+      return null;
+    },
+    exposureReason:function(selected){
+      const hasWaterControl = selected.has("subMeter") || selected.has("closedLoopClean") || selected.has("recycling");
+      if(!hasWaterControl) return "No material water control was selected, so the factory takes the full water exposure penalty.";
+      if(!selected.has("subMeter")) return "Water controls exist, but water sub-metering is missing, so the factory lacks visibility of abnormal use.";
+      return "";
+    }
+  },
+
+  2: {
+    title:"Waste contamination increases disposal cost",
+    protection:[ ["segregation",4], ["wasteTracking",3], ["circularPackaging",1] ],
+    gainText:"Waste segregation +4; waste tracking +3; circular packaging +1",
+    exposureText:"Neither segregation nor tracking -5",
+    leverage:"Waste segregation at source",
+    penalty:-5,
+    cap:8,
+    exposure:function(selected){
+      if(!selected.has("segregation") && !selected.has("wasteTracking")) return -5;
+      return null;
+    },
+    exposureReason:function(selected){
+      return "Neither waste segregation nor waste tracking was selected, so the factory cannot isolate or trace contamination effectively.";
+    }
+  },
+
+  3: {
+    title:"Contractor work surge during shutdown",
+    protection:[ ["contractorHub",4], ["ptw",3], ["erc",1] ],
+    gainText:"Contractor safety hub +4; digital PTW +3; emergency response +1",
+    exposureText:"Neither contractor hub nor PTW -5",
+    leverage:"Contractor safety hub",
+    penalty:-5,
+    cap:8,
+    exposure:function(selected){
+      if(!selected.has("contractorHub") && !selected.has("ptw")) return -5;
+      return null;
+    },
+    exposureReason:function(selected){
+      return "Neither contractor safety hub nor digital permit-to-work was selected, so high-risk contractor work is weakly controlled.";
+    }
+  },
+
+  4: {
+    title:"Utility performance loss",
+    protection:[ ["energyMonitoring",4], ["predictiveMaint",3], ["efficientUtilities",1] ],
+    gainText:"Smart energy monitoring +4; predictive maintenance +3; efficient utilities +1",
+    exposureText:"No monitoring or maintenance -4",
+    leverage:"Smart energy monitoring",
+    penalty:-4,
+    cap:8,
+    exposure:function(selected){
+      if(!selected.has("energyMonitoring") && !selected.has("predictiveMaint")) return -4;
+      return null;
+    },
+    exposureReason:function(selected){
+      return "Neither smart energy monitoring nor predictive maintenance was selected, so utility losses are harder to detect and prevent.";
+    }
+  },
+
+  5: {
+    title:"Overdue compliance actions",
+    protection:[ ["complianceCentre",5], ["wastewaterMon",1] ],
+    gainText:"Compliance control centre +5; advanced wastewater monitoring +1",
+    exposureText:"No compliance control centre -4",
+    leverage:"Digital compliance control centre",
+    penalty:-4,
+    cap:8,
+    exposure:function(selected){
+      if(!selected.has("complianceCentre")) return -4;
+      return null;
+    },
+    exposureReason:function(selected){
+      return "Digital compliance control centre was not selected, so obligations, owners and evidence are not centrally visible.";
+    }
+  },
+
+  6: {
+    title:"Repeat safety observations",
+    protection:[ ["safeEquipment",3], ["predictiveMaint",2], ["contractorHub",2], ["ptw",1] ],
+    gainText:"Safe equipment design +3; predictive maintenance +2; contractor hub +2; PTW +1",
+    exposureText:"No relevant preventive control -5",
+    leverage:"Depends on scenario diagnosis",
+    penalty:-5,
+    cap:8,
+    exposure:function(selected){
+      const hasRelevantPreventive =
+        selected.has("safeEquipment") ||
+        selected.has("predictiveMaint") ||
+        selected.has("contractorHub") ||
+        selected.has("ptw");
+
+      if(!hasRelevantPreventive) return -5;
+      return null;
+    },
+    exposureReason:function(selected){
+      return "No relevant preventive safety control was selected, so repeat observations continue without a strong prevention layer.";
+    }
+  }
+};
+
+const ORANGE = {
+  1: {
+    title:"Water scarcity restriction",
+    protection:[ ["recycling",5], ["closedLoopClean",3], ["subMeter",2], ["rainwater",1] ],
+    gainText:"Water recycling +5; closed-loop cleaning +3; sub-metering +2; rainwater management +1",
+    exposureText:"No material water control -8",
+    leverage:"Water visibility and reuse",
+    penalty:-8,
+    cap:12,
+    exposure:function(selected){
+      const hasMaterialWaterControl =
+        selected.has("recycling") ||
+        selected.has("closedLoopClean") ||
+        selected.has("subMeter") ||
+        selected.has("rainwater");
+
+      if(!hasMaterialWaterControl) return -8;
+      return null;
+    },
+    exposureReason:function(selected){
+      return "No material water control was selected, so the site has limited water visibility, reuse or restriction resilience.";
+    }
+  },
+
+  2: {
+    title:"Extreme rainfall / flood",
+    protection:[ ["climateInfra",5], ["rainwater",4], ["erc",2] ],
+    gainText:"Climate-resilient infrastructure +5; rainwater management +4; emergency response +2",
+    exposureText:"Neither climate nor rainwater control -8",
+    leverage:"Stormwater and critical asset protection",
+    penalty:-8,
+    cap:12,
+    exposure:function(selected){
+      if(!selected.has("climateInfra") && !selected.has("rainwater")) return -8;
+      return null;
+    },
+    exposureReason:function(selected){
+      return "Neither climate-resilient infrastructure nor rainwater management was selected, so stormwater and critical asset protection are weak.";
+    }
+  },
+
+  3: {
+    title:"Solvent spill",
+    protection:[ ["safeEquipment",4], ["predictiveMaint",3], ["erc",3], ["solventRecovery",2] ],
+    gainText:"Safe equipment +4; predictive maintenance +3; emergency response +3; solvent recovery +2",
+    exposureText:"No preventive or response control -10",
+    leverage:"Prevent failure before response",
+    penalty:-10,
+    cap:12,
+    exposure:function(selected){
+      const hasPreventiveOrResponse =
+        selected.has("safeEquipment") ||
+        selected.has("predictiveMaint") ||
+        selected.has("erc") ||
+        selected.has("solventRecovery");
+
+      if(!hasPreventiveOrResponse) return -10;
+      return null;
+    },
+    exposureReason:function(selected){
+      return "No preventive or response control was selected, so the site lacks both spill prevention and response capability.";
+    }
+  },
+
+  4: {
+    title:"Energy price shock",
+    protection:[ ["efficientUtilities",4], ["solar",4], ["heatRecovery",3], ["energyMonitoring",1] ],
+    gainText:"Efficient utilities +4; solar +4; heat recovery +3; monitoring +1",
+    exposureText:"No energy control -7",
+    leverage:"Identify losses before buying supply",
+    penalty:-7,
+    cap:12,
+    exposure:function(selected){
+      const hasEnergyControl =
+        selected.has("efficientUtilities") ||
+        selected.has("solar") ||
+        selected.has("heatRecovery") ||
+        selected.has("energyMonitoring");
+
+      if(!hasEnergyControl) return -7;
+      return null;
+    },
+    exposureReason:function(selected){
+      return "No energy control was selected, so the factory is exposed to price shock without efficiency, recovery, monitoring or supply protection.";
+    }
+  },
+
+  5: {
+    title:"Regulatory inspection",
+    protection:[ ["complianceCentre",5], ["wastewaterMon",3], ["wasteTracking",2], ["ptw",1] ],
+    gainText:"Compliance control centre +5; wastewater monitoring +3; waste tracking +2; PTW +1",
+    exposureText:"No compliance evidence system -8",
+    leverage:"Ownership and evidence visibility",
+    penalty:-8,
+    cap:12,
+    exposure:function(selected){
+      if(!selected.has("complianceCentre")) return -8;
+      return null;
+    },
+    exposureReason:function(selected){
+      return "No compliance evidence system was selected, so ownership, evidence and inspection readiness are weak.";
+    }
+  },
+
+  6: {
+    title:"Community complaint",
+    protection:[ ["wastewaterMon",3], ["greenChem",3], ["biodiversity",2], ["rainwater",1] ],
+    gainText:"Wastewater monitoring +3; green chemistry +3; biodiversity buffer +2; rainwater management +1",
+    exposureText:"No relevant environmental control -6",
+    leverage:"Source control and transparent evidence",
+    penalty:-6,
+    cap:12,
+    exposure:function(selected){
+      const hasRelevantEnvironmentalControl =
+        selected.has("wastewaterMon") ||
+        selected.has("greenChem") ||
+        selected.has("biodiversity") ||
+        selected.has("rainwater");
+
+      if(!hasRelevantEnvironmentalControl) return -6;
+      return null;
+    },
+    exposureReason:function(selected){
+      return "No relevant environmental control was selected, so the site lacks source control and transparent evidence for the complaint.";
+    }
+  }
+};
+
+      function rate(score){
+        if(score >= 90) return { band:"Future-ready factory", css:"green", msg:"Integrated, preventive and resilient design" };
+        if(score >= 75) return { band:"Resilient factory", css:"teal", msg:"Strong overall design with limited vulnerabilities" };
+        if(score >= 60) return { band:"Sustainable factory", css:"blue", msg:"Good foundations, but material gaps remain" };
+        if(score >= 40) return { band:"Developing factory", css:"orange", msg:"Several controls exist, but the system remains reactive" };
+        return { band:"High-risk factory", css:"red", msg:"Critical safety, environmental or resilience exposure remains" };
+      }
+
+      // Control lookup (hidden)
+      const allControls = [];
+      CATEGORIES.forEach(cat => cat.controls.forEach(c => allControls.push({ ...c, catTitle: titleFor(cat.id) })));
+      const byId = Object.fromEntries(allControls.map(c=>[c.id,c]));
+
+      // App state
+      const state = {
+        teamName: "Team EcoWarriors",
+        factoryName: "Green Horizon",
+        members: ["A. Patel","J. Chen","",""],
+        selected: new Set(),
+        tokensPlaced: 0,
+        baseline: null,
+        round2: { blue:null, orange:null, final:null },
+        locks: { blue:false, orange:false }
+      };
+      const selectedDice = {
+  blue: 1,
+  orange: 1
+};
+
+      // screens + steps
+      const screens = ["s1","s2","s3","s4","s5"];
+      function showScreen(id){
+        screens.forEach(s => document.getElementById(s).classList.toggle("active", s===id));
+        updateSteps(id);
+        if(id==="s2"){ renderBoard(); }
+        if(id==="s3"){ renderBaseline(); }
+        if(id==="s4"){ renderCards(); }
+        if(id==="s5"){ renderFinal(); }
+      }
+      function updateSteps(id){
+        const map = { s1:1, s2:2, s3:3, s4:4, s5:5 };
+        const cur = map[id] || 1;
+        for(let i=1;i<=5;i++){
+          const el = document.getElementById("step"+i);
+          el.classList.remove("active","done");
+          if(i<cur) el.classList.add("done");
+          if(i===cur) el.classList.add("active");
+        }
+      }
+
+      // Setup screen events
+      document.querySelectorAll(".chip").forEach(ch => ch.addEventListener("click", ()=>{
+        document.getElementById("factoryName").value = ch.getAttribute("data-factory");
+      }));
+      document.getElementById("btnBeginBuild").addEventListener("click", ()=>{
+  if(!validateSetup()) return;
+  syncSetup();
+  showScreen("s2");
+});
+      document.getElementById("btnResetAll").addEventListener("click", ()=>resetAll());
+
+      function validateSetup(){
+  const teamNameInput = document.getElementById("teamName");
+  const factoryNameInput = document.getElementById("factoryName");
+  const member1Input = document.getElementById("m1");
+
+  const teamName = teamNameInput.value.trim();
+  const factoryName = factoryNameInput.value.trim();
+  const member1 = member1Input.value.trim();
+
+  [teamNameInput, factoryNameInput, member1Input].forEach(input=>{
+    input.classList.remove("inputError");
+  });
+
+  if(!teamName){
+    teamNameInput.classList.add("inputError");
+    showToast("Please enter a team name.");
+    teamNameInput.focus();
+    return false;
+  }
+
+  if(!factoryName){
+    factoryNameInput.classList.add("inputError");
+    showToast("Please enter a factory name.");
+    factoryNameInput.focus();
+    return false;
+  }
+
+  if(!member1){
+    member1Input.classList.add("inputError");
+    showToast("Please enter at least one team member.");
+    member1Input.focus();
+    return false;
+  }
+
+  return true;
+}
+
+      function syncSetup(){
+        state.teamName = (document.getElementById("teamName").value || "Team").trim();
+        state.factoryName = (document.getElementById("factoryName").value || "Factory").trim();
+        state.members = [
+          document.getElementById("m1").value.trim(),
+          document.getElementById("m2").value.trim(),
+          document.getElementById("m3").value.trim(),
+          document.getElementById("m4").value.trim()
+        ];
+      }
+
+      // Screen 2 elements
+      const tokenPill = document.getElementById("tokenPill");
+      const tokensPlacedEl = document.getElementById("tokensPlaced");
+      const btnLockBaseline = document.getElementById("btnLockBaseline");
+      const teamInfoEl = document.getElementById("teamInfo");
+      const toast = document.getElementById("toast");
+
+      document.getElementById("btnBackToSetup").addEventListener("click", ()=>showScreen("s1"));
+      document.getElementById("btnClear").addEventListener("click", ()=>{ state.selected.clear(); recomputeTokens(); renderBoard(); updateTop(); });
+      document.getElementById("btnLockBaseline").addEventListener("click", ()=>{ calculateBaseline(); showScreen("s3"); });
+
+      function showToast(msg){
+        toast.textContent = msg;
+        toast.classList.add("show");
+        clearTimeout(showToast._t);
+        showToast._t = setTimeout(()=>toast.classList.remove("show"), 2200);
+      }
+
+      function shakeTokenPill(){
+        tokenPill.classList.remove("shake");
+        void tokenPill.offsetWidth;
+        tokenPill.classList.add("shake");
+      }
+
+      function updateTop(){
+        teamInfoEl.textContent = `${state.teamName} • ${state.factoryName}`;
+        tokensPlacedEl.textContent = String(state.tokensPlaced);
+        tokenPill.classList.remove("ok","full");
+        tokenPill.classList.add(state.tokensPlaced < TOKEN_LIMIT ? "ok" : "full");
+        btnLockBaseline.disabled = (state.selected.size === 0);
+      }
+
+      function recomputeTokens(){
+        let sum = 0;
+        state.selected.forEach(id => sum += (byId[id]?.cost || 0));
+        state.tokensPlaced = sum;
+      }
+      // Render board (FIX 2: no costs, no badges)
+      function renderBoard(){
+  syncSetup();
+  recomputeTokens();
+  updateTop();
+
+  CATEGORIES.forEach(cat=>{
+    const zone = document.getElementById(cat.zoneId);
+    zone.innerHTML = "";
+
+    cat.controls.forEach(ctrl=>{
+      const isSel = state.selected.has(ctrl.id);
+
+      const card = document.createElement("div");
+      card.className = "control" + (isSel ? " selected" : "");
+
+      const buttonText = isSel
+        ? "INVESTED"
+        : "INVEST";
+
+      card.innerHTML = `
+        <div class="tokenChip" aria-label="Selected">✓</div>
+        <div class="name">${escapeHtml(ctrl.name)}</div>
+        <div class="benefit">${escapeHtml(ctrl.benefit)}</div>
+        <button class="selectBtn">${buttonText}</button>
+      `;
+
+      const btn = card.querySelector(".selectBtn");
+      btn.addEventListener("click", ()=>toggle(ctrl.id));
+
+      zone.appendChild(card);
+    });
+  });
+}
+
+      function toggle(id){
+        const ctrl = byId[id];
+        if(!ctrl) return;
+
+        if(state.selected.has(id)){
+          state.selected.delete(id);
+          recomputeTokens();
+          renderBoard();
+          updateTop();
+          return;
+        }
+
+        // enforce hidden costs against limit 15
+        const next = state.tokensPlaced + (ctrl.cost || 0);
+        if(next > TOKEN_LIMIT){
+          showToast("⚠️ Selection would exceed 15 tokens. Deselect a control first.");
+          shakeTokenPill();
+          return;
+        }
+        state.selected.add(id);
+        recomputeTokens();
+        renderBoard();
+        updateTop();
+      }
+
+      // Screen 3 baseline
+      document.getElementById("btnBackToBuild").addEventListener("click", ()=>showScreen("s2"));
+      document.getElementById("btnToCards").addEventListener("click", ()=>showScreen("s4"));
+
+      function calculateBaseline(){
+        const raw = { Safety:0, Water:0, Environment:0, Energy:0, ComplianceResilience:0 };
+
+        state.selected.forEach(id=>{
+          const hs = byId[id].hidden || {};
+          raw.Safety += (hs.Safety || 0);
+          raw.Water += (hs.Water || 0);
+          raw.Environment += (hs.Environment || 0);
+          raw.Energy += (hs.Energy || 0);
+          raw.ComplianceResilience += (hs.Compliance || 0) + (hs.Resilience || 0);
+        });
+
+        const capped = {
+          Safety: Math.min(raw.Safety, CAPS.Safety),
+          Water: Math.min(raw.Water, CAPS.Water),
+          Environment: Math.min(raw.Environment, CAPS.Environment),
+          Energy: Math.min(raw.Energy, CAPS.Energy),
+          ComplianceResilience: Math.min(raw.ComplianceResilience, CAPS.ComplianceResilience)
+        };
+
+        const cappedTotal = capped.Safety + capped.Water + capped.Environment + capped.Energy + capped.ComplianceResilience;
+        const normValue = Math.round(cappedTotal * 60 / 70);
+        const coverage = [
+          capped.Safety>0, capped.Water>0, capped.Environment>0, capped.Energy>0, capped.ComplianceResilience>0
+        ].filter(Boolean).length;
+        const balanceBonus = coverage===5 ? 10 : coverage===4 ? 6 : coverage===3 ? 3 : 0;
+        const baseline = Math.min(70, normValue + balanceBonus);
+
+        state.baseline = { raw, capped, cappedTotal, normValue, coverage, balanceBonus, baseline,
+          selectedControls: Array.from(state.selected).map(id=>({ id, ...byId[id] }))
+            .sort((a,b)=>a.catTitle.localeCompare(b.catTitle) || a.name.localeCompare(b.name))
+        };
+      }
+
+      function renderBaseline(){
+  if(!state.baseline) calculateBaseline();
+  const b = state.baseline;
+
+  const scoreBreakdown = document.getElementById("scoreBreakdown");
+  scoreBreakdown.innerHTML = `
+    <div class="scoreBox">
+      <div class="scoreBoxLabel">Capped category total</div>
+      <div class="scoreBoxValue">${b.cappedTotal} / 70</div>
+    </div>
+
+    <div class="scoreBox">
+      <div class="scoreBoxLabel">Normalized control value</div>
+      <div class="scoreBoxValue">${b.normValue} / 60</div>
+    </div>
+
+    <div class="scoreBox">
+      <div class="scoreBoxLabel">Balance bonus</div>
+      <div class="scoreBoxValue">${b.balanceBonus} / 10</div>
+    </div>
+
+    <div class="scoreBox">
+      <div class="scoreBoxLabel">Baseline score</div>
+      <div class="scoreBoxValue orange">${b.baseline} / 70</div>
+    </div>
+
+    <div class="scoreBox">
+      <div class="scoreBoxLabel">Categories covered</div>
+      <div class="scoreBoxValue">${b.coverage} / 5</div>
+    </div>
+
+    <div class="scoreBox">
+      <div class="scoreBoxLabel">Token budget</div>
+      <div class="scoreBoxValue">${state.tokensPlaced} / ${TOKEN_LIMIT}</div>
+    </div>
+  `;
+
+  const bars = document.getElementById("bars");
+  bars.innerHTML = "";
+
+  const items = [
+    {
+      key:"Safety",
+      label:"Safety",
+      val:b.capped.Safety,
+      cap:CAPS.Safety,
+      color:"var(--zonePeople)"
+    },
+    {
+      key:"Water",
+      label:"Water",
+      val:b.capped.Water,
+      cap:CAPS.Water,
+      color:"var(--zoneWater)"
+    },
+    {
+      key:"Environment",
+      label:"Waste & Environment",
+      val:b.capped.Environment,
+      cap:CAPS.Environment,
+      color:"var(--zoneWaste)"
+    },
+    {
+      key:"Energy",
+      label:"Energy & Carbon",
+      val:b.capped.Energy,
+      cap:CAPS.Energy,
+      color:"var(--zoneEnergy)"
+    },
+    {
+      key:"ComplianceResilience",
+      label:"Compliance & Resilience",
+      val:b.capped.ComplianceResilience,
+      cap:CAPS.ComplianceResilience,
+      color:"var(--zoneRes)"
+    }
+  ];
+
+  items.forEach(it=>{
+    const pct = Math.round((it.val / it.cap) * 100);
+
+    const row = document.createElement("div");
+    row.className = "card pad";
+    row.style.background = "rgba(0,0,0,0.02)";
+
+    row.innerHTML = `
+      <div style="display:flex; justify-content:space-between; align-items:center; gap:12px;">
+        <div style="font-weight:1000;">${it.label}</div>
+        <div class="categoryPointText">${it.val} / ${it.cap} points • ${pct}% of cap</div>
+      </div>
+
+      <div style="margin-top:10px; height:12px; border-radius:999px; background: rgba(0,0,0,0.08); overflow:hidden; border:1px solid rgba(0,0,0,0.10);">
+        <div style="height:100%; width:${pct}%; background: ${it.color};"></div>
+      </div>
+    `;
+
+    bars.appendChild(row);
+  });
+
+  document.getElementById("balText").textContent =
+    b.coverage === 5
+      ? "All 5 categories covered — Balance Bonus earned (+10)"
+      : b.coverage === 4
+        ? "4 categories covered — Balance Bonus earned (+6)"
+        : b.coverage === 3
+          ? "3 categories covered — Balance Bonus earned (+3)"
+          : "2 or fewer categories covered — No balance bonus";
+
+  const list = document.getElementById("selectedList");
+  list.innerHTML = "";
+
+  b.selectedControls.forEach(item=>{
+    const div = document.createElement("div");
+    div.className = "card pad";
+    div.style.background = "rgba(0,0,0,0.02)";
+
+    div.innerHTML = `
+      <div style="font-weight:1000;">${escapeHtml(item.name)}</div>
+      <div style="margin-top:6px; color: rgba(0,0,0,0.60); font-weight:800;">${escapeHtml(item.catTitle)}</div>
+    `;
+
+    list.appendChild(div);
+  });
+
+  animateNumber("baselineAnim", b.baseline, 900);
+}
+function animateNumber(id, target, duration){
+  const el = document.getElementById(id);
+  if(!el) return;
+
+  el.textContent = "0";
+
+  const startTime = performance.now();
+
+  function tick(currentTime){
+    const progress = Math.min(1, (currentTime - startTime) / duration);
+    const eased = 1 - Math.pow(1 - progress, 3);
+    el.textContent = String(Math.round(target * eased));
+
+    if(progress < 1){
+      requestAnimationFrame(tick);
+    }
+  }
+
+  requestAnimationFrame(tick);
+}
+
+      // Screen 4 cards (FIX 3 + FIX 4)
+      document.getElementById("btnBackToBaseline").addEventListener("click", ()=>showScreen("s3"));
+document.getElementById("btnRevealBlue").addEventListener("click", ()=>reveal("blue"));
+document.getElementById("btnRevealOrange").addEventListener("click", ()=>reveal("orange"));
+document.getElementById("btnSkipOrange").addEventListener("click", ()=>skipOrange());
+document.getElementById("btnCalcFinal").addEventListener("click", ()=>{ calculateFinal(); showScreen("s5"); });
+document.getElementById("btnBackToCards").addEventListener("click", ()=>showScreen("s4"));
+
+      function renderCards(){
+  renderDicePicker("blueDicePicker", "blue");
+  renderDicePicker("orangeDicePicker", "orange");
+  updateCalcButtonVisibility();
+}
+
+function renderDicePicker(containerId, deck){
+  const container = document.getElementById(containerId);
+  if(!container) return;
+
+  container.innerHTML = "";
+
+  for(let i=1; i<=6; i++){
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "diceBtn" + (selectedDice[deck] === i ? " active" : "");
+    btn.setAttribute("data-deck", deck);
+    btn.setAttribute("data-value", String(i));
+    btn.setAttribute("aria-label", `${deck} dice ${i}`);
+    btn.disabled = !!state.locks[deck];
+    btn.innerHTML = diceFaceHtml(i);
+
+    btn.addEventListener("click", ()=>{
+      if(state.locks[deck]) return;
+      selectedDice[deck] = i;
+      updateDiceActive(deck);
+    });
+
+    container.appendChild(btn);
+  }
+}
+
+function updateDiceActive(deck){
+  document.querySelectorAll(`.diceBtn[data-deck="${deck}"]`).forEach(btn=>{
+    const val = parseInt(btn.getAttribute("data-value"), 10);
+    btn.classList.toggle("active", val === selectedDice[deck]);
+  });
+}
+
+function diceFaceHtml(n){
+  return `
+    <span class="diceFace face-${n}">
+      <span class="pip p1"></span>
+      <span class="pip p2"></span>
+      <span class="pip p3"></span>
+      <span class="pip p4"></span>
+      <span class="pip p5"></span>
+      <span class="pip p6"></span>
+      <span class="pip p7"></span>
+    </span>
+  `;
+}   
+
+function buildEventExplanation(card, effect, exposurePenalty){
+  const selectedGains = card.protection
+    .filter(([cid]) => state.selected.has(cid))
+    .map(([cid, pts]) => `${byId[cid]?.name || cid} +${pts}`);
+
+  const likelyLeverage = card.leverage || (card.protection[0] ? byId[card.protection[0][0]]?.name : "Relevant control");
+
+  if(typeof exposurePenalty === "number"){
+    const reason = card.exposureReason
+      ? card.exposureReason(state.selected)
+      : "A key control gap triggered the exposure penalty.";
+
+    return `
+      <div style="display:grid; gap:6px;">
+        <div><b>Reason:</b> ${escapeHtml(reason)}</div>
+        <div><b>Exposure penalty:</b> ${escapeHtml(card.exposureText || signed(effect))}</div>
+        <div><b>Likely leverage point:</b> ${escapeHtml(likelyLeverage)}</div>
+      </div>
+    `;
+  }
+
+  if(selectedGains.length > 0){
+    return `
+      <div style="display:grid; gap:6px;">
+        <div><b>Protection applied:</b> ${escapeHtml(selectedGains.join("; "))}</div>
+        <div><b>Available gains on this card:</b> ${escapeHtml(card.gainText || "Relevant selected controls improved the score.")}</div>
+        <div><b>Likely leverage point:</b> ${escapeHtml(likelyLeverage)}</div>
+      </div>
+    `;
+  }
+
+  return `
+    <div style="display:grid; gap:6px;">
+      <div><b>Reason:</b> No relevant protection control was selected.</div>
+      <div><b>Effect:</b> ${signed(effect)}</div>
+      <div><b>Likely leverage point:</b> ${escapeHtml(likelyLeverage)}</div>
+    </div>
+  `;
+}
+
+function reveal(deck){
+  if(state.locks[deck]) return;
+
+  const isBlue = deck === "blue";
+  const panel = document.getElementById(isBlue ? "bluePanel" : "orangePanel");
+  const btn = document.getElementById(isBlue ? "btnRevealBlue" : "btnRevealOrange");
+
+  const n = selectedDice[deck] || 1;
+  const card = (isBlue ? BLUE : ORANGE)[n];
+
+  let bonus = 0;
+let matches = 0;
+
+card.protection.forEach(([cid, pts])=>{
+  if(state.selected.has(cid)){
+    matches += 1;
+    bonus += pts;
+  }
+});
+
+bonus = Math.min(bonus, card.cap);
+
+const exposurePenalty = card.exposure ? card.exposure(state.selected) : null;
+
+let effect;
+
+if(typeof exposurePenalty === "number"){
+  effect = exposurePenalty;
+}else if(matches > 0){
+  effect = bonus;
+}else{
+  effect = card.penalty;
+}
+const explanationHtml = buildEventExplanation(card, effect, exposurePenalty);
+
+  const details = {
+    n,
+    title: card.title,
+    effect
+  };
+
+  if(isBlue){
+    state.round2.blue = details;
+
+    document.getElementById("blueReveal").style.display = "block";
+    document.getElementById("blueTitle").textContent = card.title;
+
+    const el = document.getElementById("blueEffectNum");
+    el.classList.remove("effectGood", "effectBad");
+    el.textContent = signed(effect);
+    el.classList.add(effect >= 0 ? "effectGood" : "effectBad");
+    document.querySelector("#blueReveal .effectNeutral").innerHTML = explanationHtml;
+    void el.offsetWidth;
+    el.style.animation = "none";
+    void el.offsetWidth;
+    el.style.animation = "";
+  } else {
+    state.round2.orange = details;
+
+    document.getElementById("orangeReveal").style.display = "block";
+    document.getElementById("orangeTitle").textContent = card.title;
+
+    const el = document.getElementById("orangeEffectNum");
+    el.classList.remove("effectGood", "effectBad");
+    el.textContent = signed(effect);
+    el.classList.add(effect >= 0 ? "effectGood" : "effectBad");
+    document.querySelector("#orangeReveal .effectNeutral").innerHTML = explanationHtml;
+    void el.offsetWidth;
+    el.style.animation = "none";
+    void el.offsetWidth;
+    el.style.animation = "";
+  }
+
+  state.locks[deck] = true;
+  panel.classList.add("locked");
+  btn.disabled = true;
+
+  document.querySelectorAll(`.diceBtn[data-deck="${deck}"]`).forEach(diceBtn=>{
+    diceBtn.disabled = true;
+  });
+
+  updateCalcButtonVisibility();
+}
+function skipOrange(){
+  if(!state.round2.blue) return;
+  if(state.locks.orange) return;
+
+  state.round2.orange = {
+    n: null,
+    title: "Major Disruption skipped",
+    effect: 0,
+    skipped: true
+  };
+
+  state.locks.orange = true;
+
+  document.getElementById("orangePanel").classList.add("locked");
+  document.getElementById("btnRevealOrange").disabled = true;
+  document.getElementById("btnSkipOrange").disabled = true;
+
+  document.querySelectorAll('.diceBtn[data-deck="orange"]').forEach(btn=>{
+    btn.disabled = true;
+  });
+
+  calculateFinal();
+  showScreen("s5");
+}
+
+      function updateCalcButtonVisibility(){
+  const btnCalc = document.getElementById("btnCalcFinal");
+  const btnSkipOrange = document.getElementById("btnSkipOrange");
+
+  if(state.round2.blue){
+    btnCalc.style.display = "inline-flex";
+
+    if(btnSkipOrange && !state.locks.orange){
+      btnSkipOrange.disabled = false;
+    }
+  } else {
+    btnCalc.style.display = "none";
+
+    if(btnSkipOrange){
+      btnSkipOrange.disabled = true;
+    }
+  }
+}
+
+      // Screen 5 final
+      document.getElementById("btnSaveScore").addEventListener("click", ()=>saveScore());
+document.getElementById("btnResetNextTeam").addEventListener("click", ()=>resetAll());
+
+      function saveScore(){
+  const btn = document.getElementById("btnSaveScore");
+  const oldText = btn.textContent;
+
+  try{
+    if(!state.round2.final){
+      calculateFinal();
+    }
+
+    const f = state.round2.final;
+
+    const membersText = state.members
+      .filter(member => member && member.trim())
+      .join(", ");
+
+    const selectedControlsText = state.baseline && state.baseline.selectedControls
+      ? state.baseline.selectedControls
+          .map(item => `${item.name} - ${item.catTitle}`)
+          .join("; ")
+      : "";
+
+    const powerAppsBaseUrl = "https://apps.powerapps.com/play/e/default-f35a6974-607f-47d4-82d7-ff31d7dc53a5/a/3a2fdff6-73c2-4beb-966f-c0b27e3ed748?tenantId=f35a6974-607f-47d4-82d7-ff31d7dc53a5&hint=c537e287-27bb-42c4-b832-5f42646219ca&sourcetime=1793096820579";
+
+    const params = new URLSearchParams({
+      title: state.teamName || "Team",
+      team: state.teamName || "",
+      factory: state.factoryName || "",
+      members: membersText,
+      baseline: String(Number(f.baseline || 0)),
+      blue: String(Number(f.blueEff || 0)),
+      orange: String(Number(f.orangeEff || 0)),
+      total: String(Number(f.total || 0)),
+      rating: f.rating ? f.rating.band : "",
+      controls: selectedControlsText
+    });
+
+    const separator = powerAppsBaseUrl.includes("?") ? "&" : "?";
+    const finalUrl = `${powerAppsBaseUrl}${separator}${params.toString()}`;
+
+    window.location.href = finalUrl;
+
+    btn.textContent = "Power App Opened";
+    showToast("Power App opened. Review and save the score.");
+
+    setTimeout(()=>{
+      btn.textContent = oldText;
+    }, 2000);
+
+  }catch(error){
+    console.error(error);
+
+    btn.textContent = "Open Failed";
+    showToast("Could not open the score saving app.");
+
+    setTimeout(()=>{
+      btn.textContent = oldText;
+    }, 2200);
+  }
+}
+function csvCell(value){
+  const text = String(value ?? "");
+  return `"${text.replace(/"/g, '""')}"`;
+}
+      function calculateFinal(){
+        const baseline = state.baseline ? state.baseline.baseline : 0;
+        const blueEff = state.round2.blue ? state.round2.blue.effect : 0;
+        const orangeEff = state.round2.orange ? state.round2.orange.effect : 0;
+        let total = baseline + blueEff + orangeEff;
+        total = Math.max(0, Math.min(100, total));
+        state.round2.final = { baseline, blueEff, orangeEff, total, rating: rate(total) };
+      }
+
+      function renderFinal(){
+        renderConfetti("confettiFinal", 18);
+        const f = state.round2.final;
+
+        document.getElementById("finalBase").textContent = String(f.baseline);
+        document.getElementById("finalBlue").textContent = signed(f.blueEff);
+        document.getElementById("finalOrange").textContent = signed(f.orangeEff);
+        document.getElementById("finalTotal").textContent = String(f.total);
+
+        const badge = document.getElementById("ratingBadge");
+        badge.className = "rating " + f.rating.css;
+        badge.textContent = f.rating.band;
+        document.getElementById("ratingMsg").textContent = f.rating.msg;
+
+        // control summary
+        const list = document.getElementById("finalControls");
+        list.innerHTML = "";
+        (state.baseline.selectedControls || []).forEach(item=>{
+          const div = document.createElement("div");
+          div.className = "card pad";
+          div.style.background = "rgba(255,255,255,0.85)";
+          div.innerHTML = `<div style="font-weight:1000;">${escapeHtml(item.name)}</div>
+                           <div style="margin-top:6px; color: rgba(0,0,0,0.60); font-weight:800;">${escapeHtml(item.catTitle)}</div>`;
+          list.appendChild(div);
+        });
+
+        animateNumber("finalAnim", f.total, 950);
+      }
+
+      function renderConfetti(areaId, density){
+        const area = document.getElementById(areaId);
+        area.innerHTML = "";
+        const colors = ["#00A651","#FFB900","#FFFFFF","#7BE3FF","#B4A0FF","#FF7BD2","#19C37D","#003865"];
+        for(let i=0;i<density;i++){
+          const piece = document.createElement("div");
+          piece.className = "confetti-piece";
+          piece.style.left = (Math.random()*100) + "%";
+          piece.style.width = (6 + Math.random()*10) + "px";
+          piece.style.height = (10 + Math.random()*14) + "px";
+          piece.style.background = colors[i % colors.length];
+          piece.style.animationDuration = (2.8 + Math.random()*2.4) + "s";
+          piece.style.animationDelay = (Math.random()*1.6) + "s";
+          area.appendChild(piece);
+        }
+      }
+
+      // Reset (also unlock cards)
+      function resetAll(){
+        state.teamName = "";
+state.factoryName = "";
+state.members = ["","","",""];
+        state.selected.clear();
+        state.tokensPlaced = 0;
+        state.baseline = null;
+        state.round2 = { blue:null, orange:null, final:null };
+        state.locks = { blue:false, orange:false };
+
+        document.getElementById("teamName").value = state.teamName;
+        document.getElementById("factoryName").value = state.factoryName;
+        document.getElementById("m1").value = state.members[0];
+        document.getElementById("m2").value = state.members[1];
+        document.getElementById("m3").value = state.members[2];
+        document.getElementById("m4").value = state.members[3];
+
+        // unlock card UI
+selectedDice.blue = 1;
+selectedDice.orange = 1;
+
+document.getElementById("bluePanel").classList.remove("locked");
+document.getElementById("orangePanel").classList.remove("locked");
+
+document.getElementById("btnRevealBlue").disabled = false;
+document.getElementById("btnRevealOrange").disabled = false;
+document.getElementById("btnSkipOrange").disabled = true;
+
+document.getElementById("blueReveal").style.display = "none";
+document.getElementById("orangeReveal").style.display = "none";
+document.getElementById("btnCalcFinal").style.display = "none";
+
+renderDicePicker("blueDicePicker", "blue");
+renderDicePicker("orangeDicePicker", "orange");
+
+        showScreen("s1");
+      }
+
+      // Helper: read CSS var in JS
+      function getCss(name){
+        return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+      }
+
+      function titleFor(catId){
+        return catId==="people" ? "Protect People"
+          : catId==="water" ? "Protect Water"
+          : catId==="waste" ? "Reduce Waste"
+          : catId==="energy" ? "Energy and Carbon"
+          : "Build Resilience";
+      }
+      function escapeHtml(str){
+        return String(str).replace(/[&<>"']/g, s => ({
+          "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"
+        }[s]));
+      }
+      function signed(n){ return (n>=0?"+":"") + n; }
+      function clampInt(v,a,b){
+        const n = parseInt(v,10);
+        if(isNaN(n)) return a;
+        return Math.max(a, Math.min(b, n));
+      }
+
+      // Initial setup
+      // Initial setup
+updateSteps("s1");
+renderDicePicker("blueDicePicker", "blue");
+renderDicePicker("orangeDicePicker", "orange");
+    })();
+  </script>
+</body>
+</html>
